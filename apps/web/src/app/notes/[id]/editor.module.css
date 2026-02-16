@@ -1,0 +1,300 @@
+/* ============================================================
+   Note Editor Styles
+   ============================================================ */
+
+.editorPage {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-primary);
+}
+
+/* ---------- Top Bar ---------- */
+.topBar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.topBarLeft {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.backBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: color var(--transition-fast);
+    padding: 4px 0;
+}
+
+.backBtn:hover {
+    color: var(--text-primary);
+}
+
+.topBarRight {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.saveStatus {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* ---------- Toolbar ---------- */
+.toolbar {
+    position: sticky;
+    top: 49px;
+    z-index: 19;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 24px;
+    background: rgba(18, 18, 26, 0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-subtle);
+    flex-wrap: wrap;
+}
+
+.toolbarGroup {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.toolbarDivider {
+    width: 1px;
+    height: 24px;
+    background: var(--border-subtle);
+    margin: 0 6px;
+}
+
+.toolBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.toolBtn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.toolBtnActive {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--text-accent);
+}
+
+.toolBtn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* ---------- Editor Container ---------- */
+.editorContainer {
+    flex: 1;
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 40px 24px 120px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.titleInput {
+    width: 100%;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: transparent;
+    border: none;
+    outline: none;
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.titleInput::placeholder {
+    color: var(--text-muted);
+}
+
+/* ---------- TipTap Editor Styles ---------- */
+.editorContent {
+    position: relative;
+}
+
+.editorContent :global(.tiptap) {
+    outline: none;
+    min-height: 400px;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--text-primary);
+}
+
+.editorContent :global(.tiptap p.is-editor-empty:first-child::before) {
+    content: attr(data-placeholder);
+    float: left;
+    color: var(--text-muted);
+    pointer-events: none;
+    height: 0;
+}
+
+.editorContent :global(.tiptap h1) {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 32px 0 12px;
+    letter-spacing: -0.01em;
+}
+
+.editorContent :global(.tiptap h2) {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 28px 0 10px;
+}
+
+.editorContent :global(.tiptap h3) {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 24px 0 8px;
+}
+
+.editorContent :global(.tiptap p) {
+    margin-bottom: 8px;
+}
+
+.editorContent :global(.tiptap ul),
+.editorContent :global(.tiptap ol) {
+    padding-left: 24px;
+    margin-bottom: 8px;
+}
+
+.editorContent :global(.tiptap li) {
+    margin-bottom: 4px;
+}
+
+.editorContent :global(.tiptap blockquote) {
+    border-left: 3px solid var(--accent-purple);
+    padding-left: 16px;
+    margin: 16px 0;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.editorContent :global(.tiptap code) {
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    color: var(--text-accent);
+}
+
+.editorContent :global(.tiptap pre) {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    margin: 16px 0;
+    overflow-x: auto;
+}
+
+.editorContent :global(.tiptap pre code) {
+    background: none;
+    padding: 0;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+}
+
+.editorContent :global(.tiptap hr) {
+    border: none;
+    border-top: 1px solid var(--border-subtle);
+    margin: 24px 0;
+}
+
+/* Task list styles */
+.editorContent :global(.tiptap ul[data-type="taskList"]) {
+    list-style: none;
+    padding-left: 0;
+}
+
+.editorContent :global(.tiptap ul[data-type="taskList"] li) {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.editorContent :global(.tiptap ul[data-type="taskList"] li label) {
+    margin-top: 4px;
+}
+
+.editorContent :global(.tiptap ul[data-type="taskList"] li input[type="checkbox"]) {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-purple);
+    cursor: pointer;
+    margin-top: 3px;
+}
+
+.editorContent :global(.tiptap ul[data-type="taskList"] li[data-checked="true"] > div > p) {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+/* ---------- Loading State ---------- */
+.loadingState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 24px;
+    color: var(--text-secondary);
+    gap: 16px;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-subtle);
+    border-top-color: var(--accent-purple);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .editorContainer {
+        padding: 24px 16px 80px;
+    }
+
+    .titleInput {
+        font-size: 1.6rem;
+    }
+
+    .toolbar {
+        padding: 8px 12px;
+    }
+}
