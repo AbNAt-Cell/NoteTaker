@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import RecordingWidget from './RecordingWidget';
+import { transcribeAudioAsync, WhisperResult } from '@/lib/services/whisper';
 import styles from './dashboard.module.css';
 
 interface MeetingItem {
@@ -30,6 +32,8 @@ export default function DashboardPage() {
     const [activeNav, setActiveNav] = useState('getting_started');
     const [creatingMeeting, setCreatingMeeting] = useState(false);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const [showRecorder, setShowRecorder] = useState(false);
+    const [isTranscribing, setIsTranscribing] = useState(false);
     const router = useRouter();
     const supabase = createClient();
 
@@ -58,20 +62,34 @@ export default function DashboardPage() {
         loadMeetings();
     }, [loadMeetings]);
 
-    const handleCreateMeeting = async () => {
+    const handleStartRecording = () => {
+        setShowRecorder(true);
+    };
+
+    const handleRecordingSave = async (data: {
+        audioBlob: Blob | null;
+        title: string;
+        notes: string;
+        duration: number;
+        transcript: { speaker: string; text: string; start: number; end: number }[];
+    }) => {
+        setShowRecorder(false);
         setCreatingMeeting(true);
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data, error } = await supabase
+        // Create meeting in Supabase
+        const { data: meetingData, error } = await supabase
             .from('meetings')
             .insert({
                 user_id: user.id,
-                title: 'Untitled Meeting',
+                title: data.title || 'Untitled Meeting',
                 summary: '',
                 speakers: [],
                 tags: [],
                 scheduled_at: new Date().toISOString(),
+                duration_minutes: Math.ceil(data.duration / 60),
             })
             .select('id')
             .single();
@@ -83,8 +101,65 @@ export default function DashboardPage() {
             return;
         }
 
-        if (data) {
-            router.push(`/notes/${data.id}`);
+        if (meetingData && data.audioBlob) {
+            // Start transcription in the background
+            setIsTranscribing(true);
+            const whisperEndpoint = process.env.NEXT_PUBLIC_RUNPOD_ENDPOINT || '';
+            const whisperApiKey = process.env.NEXT_PUBLIC_RUNPOD_API_KEY || '';
+
+            if (whisperEndpoint && whisperApiKey) {
+                try {
+                    const result: WhisperResult = await transcribeAudioAsync(
+                        data.audioBlob,
+                        whisperEndpoint,
+                        whisperApiKey,
+                        (status) => console.log('Transcription status:', status),
+                    );
+
+                    // Extract unique speakers from diarization
+                    const speakers = [...new Set(result.segments.map(s => s.speaker))];
+
+                    // Update meeting with transcription results
+                    await supabase
+                        .from('meetings')
+                        .update({
+                            summary: result.text.slice(0, 500),
+                            speakers,
+                        })
+                        .eq('id', meetingData.id);
+
+                    // Store transcript segments
+                    await supabase
+                        .from('transcripts')
+                        .insert({
+                            meeting_id: meetingData.id,
+                            raw_text: result.text,
+                            cleaned_text: result.text,
+                            summary: result.text.slice(0, 500),
+                            action_items: JSON.stringify(
+                                result.segments.map(s => ({
+                                    speaker: s.speaker,
+                                    text: s.text,
+                                    start: s.start,
+                                    end: s.end,
+                                })),
+                            ),
+                        });
+
+                    console.log('Transcription saved successfully');
+                } catch (err) {
+                    console.error('Transcription error:', err);
+                }
+            } else {
+                console.warn('RunPod endpoint/key not set. Skipping transcription.');
+            }
+            setIsTranscribing(false);
+        }
+
+        // Refresh meetings list and navigate
+        if (meetingData) {
+            await loadMeetings();
+            setActiveNav('meetings');
         }
         setCreatingMeeting(false);
     };
@@ -375,7 +450,7 @@ export default function DashboardPage() {
                         <div className={styles.emptyIcon}>⚡</div>
                         <h2>No meetings yet</h2>
                         <p>Start your first meeting to capture notes and insights</p>
-                        <button className="btn-primary" onClick={handleCreateMeeting}>
+                        <button className="btn-primary" onClick={handleStartRecording}>
                             Start Your First Meeting
                         </button>
                     </div>
@@ -449,13 +524,13 @@ export default function DashboardPage() {
 
                 <button
                     className={styles.startBtn}
-                    onClick={handleCreateMeeting}
-                    disabled={creatingMeeting}
+                    onClick={handleStartRecording}
+                    disabled={creatingMeeting || showRecorder}
                 >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                     </svg>
-                    {creatingMeeting ? 'Creating...' : 'Start Amebo'}
+                    {creatingMeeting ? 'Saving...' : isTranscribing ? 'Transcribing...' : 'Start Amebo'}
                 </button>
 
                 <nav className={styles.sidebarNav}>
@@ -600,6 +675,14 @@ export default function DashboardPage() {
                     Ask AI
                 </button>
             </main>
+
+            {/* Recording Widget */}
+            {showRecorder && (
+                <RecordingWidget
+                    onClose={() => setShowRecorder(false)}
+                    onSave={handleRecordingSave}
+                />
+            )}
         </div>
     );
 }

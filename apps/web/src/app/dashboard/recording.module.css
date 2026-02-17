@@ -1,0 +1,434 @@
+/* ============================================================
+   Amebo — Recording Widget Styles
+   ============================================================ */
+
+/* ---------- Mic Select Overlay ---------- */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.micModal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px 36px 32px;
+    width: 420px;
+    max-width: 92vw;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+}
+
+.modalClose {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: #999;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 150ms ease;
+}
+
+.modalClose:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.modalTitle {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 8px;
+}
+
+.modalSub {
+    font-size: 0.88rem;
+    color: #777;
+    margin-bottom: 28px;
+    line-height: 1.5;
+}
+
+.micSelect {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    color: #333;
+    background: #fafafa;
+    appearance: none;
+    cursor: pointer;
+    margin-bottom: 20px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 150ms ease;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+}
+
+.micSelect:focus {
+    border-color: #a78bfa;
+}
+
+.startBtn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #c4b5fd, #a78bfa);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 200ms ease;
+    margin-bottom: 16px;
+}
+
+.startBtn:hover {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+}
+
+.dontShowLabel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: #999;
+    cursor: pointer;
+}
+
+.dontShowLabel input {
+    accent-color: #7c3aed;
+}
+
+/* ---------- Scratchpad Widget ---------- */
+.widget {
+    position: fixed;
+    bottom: 80px;
+    right: 24px;
+    width: 380px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.widgetHeader {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    background: #fafafa;
+}
+
+.expandBtn {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: all 150ms ease;
+}
+
+.expandBtn:hover {
+    background: #eee;
+    color: #333;
+}
+
+.widgetTitle {
+    flex: 1;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #444;
+}
+
+.widgetControls {
+    display: flex;
+    gap: 2px;
+}
+
+.winBtn {
+    background: none;
+    border: none;
+    color: #bbb;
+    font-size: 0.75rem;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 150ms ease;
+}
+
+.winBtn:hover {
+    background: #eee;
+    color: #666;
+}
+
+.winBtn:last-child:hover {
+    background: #fee;
+    color: #e55;
+}
+
+/* ---------- Scratchpad Body ---------- */
+.scratchpad {
+    flex: 1;
+    padding: 16px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.meetingTitleInput {
+    border: none;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #7c3aed;
+    outline: none;
+    font-family: inherit;
+    margin-bottom: 8px;
+}
+
+.meetingTitleInput::placeholder {
+    color: #c4b5fd;
+}
+
+.notesArea {
+    flex: 1;
+    border: none;
+    font-size: 0.88rem;
+    color: #555;
+    outline: none;
+    resize: none;
+    min-height: 140px;
+    line-height: 1.6;
+    font-family: inherit;
+}
+
+.notesArea::placeholder {
+    color: #ccc;
+}
+
+/* ---------- Short Meeting Warning ---------- */
+.warningCard {
+    margin: 0 16px 12px;
+    padding: 16px;
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 10px;
+}
+
+.warningHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 0.88rem;
+    color: #333;
+}
+
+.warningIcon {
+    font-size: 1.1rem;
+}
+
+.warningClose {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.warningCard p {
+    font-size: 0.82rem;
+    color: #777;
+    margin-bottom: 12px;
+}
+
+.warningActions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.cancelBtn {
+    flex: 1;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #555;
+    cursor: pointer;
+    transition: all 150ms ease;
+}
+
+.cancelBtn:hover {
+    background: #f5f5f5;
+}
+
+.stopBtnRed {
+    flex: 1;
+    padding: 10px;
+    background: #ef4444;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    transition: all 150ms ease;
+}
+
+.stopBtnRed:hover {
+    background: #dc2626;
+}
+
+/* ---------- Bottom Bar ---------- */
+.bottomBar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fafafa;
+    border-top: 1px solid #eee;
+}
+
+.timer {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #333;
+    font-variant-numeric: tabular-nums;
+    background: #f0f0f0;
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+
+.audioViz {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 20px;
+}
+
+.vizBar {
+    width: 3px;
+    height: 100%;
+    background: #7c3aed;
+    border-radius: 2px;
+    transition: transform 80ms ease;
+    transform-origin: center;
+}
+
+.micToggle {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    transition: all 150ms ease;
+}
+
+.micToggle:hover {
+    background: #eee;
+    color: #333;
+}
+
+.stopBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #ef4444;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.82rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 150ms ease;
+}
+
+.stopBtn:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+.stopIcon {
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border-radius: 2px;
+}
+
+/* ---------- Animations ---------- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 480px) {
+    .widget {
+        width: calc(100vw - 32px);
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .micModal {
+        margin: 16px;
+    }
+}
