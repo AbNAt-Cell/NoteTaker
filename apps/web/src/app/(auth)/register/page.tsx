@@ -48,11 +48,11 @@ export default function RegisterPage() {
         <div className={styles.authPage}>
             <div className={`${styles.authCard} glass`}>
                 <div className={styles.authLogo}>
-                    <span>📝</span>
-                    <span className="gradient-text">NoteTaker</span>
+                    <span>⚡</span>
+                    <span className="gradient-text">Amebo</span>
                 </div>
                 <h1 className={styles.authTitle}>Create your account</h1>
-                <p className={styles.authSubtitle}>Start taking smarter notes today</p>
+                <p className={styles.authSubtitle}>Start capturing smarter meetings today</p>
 
                 {error && <div className={styles.errorMessage}>{error}</div>}
 

@@ -44,8 +44,8 @@ export default function LoginPage() {
         <div className={styles.authPage}>
             <div className={`${styles.authCard} glass`}>
                 <div className={styles.authLogo}>
-                    <span>📝</span>
-                    <span className="gradient-text">NoteTaker</span>
+                    <span>⚡</span>
+                    <span className="gradient-text">Amebo</span>
                 </div>
                 <h1 className={styles.authTitle}>Welcome back</h1>
                 <p className={styles.authSubtitle}>Sign in to your account to continue</p>

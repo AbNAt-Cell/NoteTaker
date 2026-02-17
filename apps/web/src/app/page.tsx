@@ -6,19 +6,19 @@ import styles from './page.module.css';
 
 const features = [
   {
-    icon: '✍️',
-    title: 'Rich Note Editor',
-    description: 'Beautiful TipTap-powered editor with markdown, code blocks, task lists, and more.',
+    icon: '⚡',
+    title: 'AI Meeting Capture',
+    description: 'Automatically record and transcribe your meetings with enterprise-grade accuracy.',
   },
   {
     icon: '🤖',
-    title: 'AI Meeting Intelligence',
-    description: 'Automated meeting capture, transcription, and smart summaries with action items.',
+    title: 'Smart Summaries',
+    description: 'AI-generated meeting summaries, action items, and key decisions — instantly.',
   },
   {
     icon: '🔍',
     title: 'Semantic Search',
-    description: 'Find anything instantly with AI-powered search across all your notes and transcripts.',
+    description: 'Find anything across all your meetings and notes with AI-powered search.',
   },
   {
     icon: '🔄',
@@ -26,9 +26,9 @@ const features = [
     description: 'Collaborate live with Socket.io powered real-time sync across all devices.',
   },
   {
-    icon: '📂',
-    title: 'Smart Organization',
-    description: 'Folders, tags, and AI-suggested categories keep everything structured.',
+    icon: '👥',
+    title: 'Team Workspace',
+    description: 'Share meetings, tag people, and keep your entire team aligned effortlessly.',
   },
   {
     icon: '🔒',
@@ -63,8 +63,8 @@ export default function LandingPage() {
       <nav className={styles.nav}>
         <div className={styles.navInner}>
           <Link href="/" className={styles.logo}>
-            <span className={styles.logoIcon}>📝</span>
-            <span className={styles.logoText}>NoteTaker</span>
+            <span className={styles.logoIcon}>⚡</span>
+            <span className={styles.logoText}>Amebo</span>
           </Link>
           <div className={styles.navLinks}>
             <Link href="/login" className="btn-secondary" style={{ padding: '10px 22px' }}>
@@ -82,20 +82,20 @@ export default function LandingPage() {
         <div className={styles.heroContent}>
           <div className={styles.badge}>
             <span className={styles.badgeDot} />
-            AI-Powered Note Taking
+            AI-Powered Meeting Intelligence
           </div>
           <h1 className={styles.heroTitle}>
-            Your notes,
+            Your meetings,
             <br />
             <span className="gradient-text">supercharged with AI</span>
           </h1>
           <p className={styles.heroSubtitle}>
-            Capture meetings, organize thoughts, and let AI extract insights —
+            Capture meetings, generate transcripts, and let AI extract insights —
             all in one beautiful platform built for modern teams.
           </p>
           <div className={styles.heroCta}>
             <Link href="/register" className="btn-primary" style={{ padding: '16px 36px', fontSize: '1.05rem' }}>
-              Start Taking Notes →
+              Start Using Amebo →
             </Link>
             <Link href="#features" className="btn-secondary" style={{ padding: '16px 36px', fontSize: '1.05rem' }}>
               See Features
@@ -109,7 +109,7 @@ export default function LandingPage() {
             <div className={styles.statDivider} />
             <div className={styles.stat}>
               <span className={styles.statNumber}>∞</span>
-              <span className={styles.statLabel}>Notes</span>
+              <span className={styles.statLabel}>Meetings</span>
             </div>
             <div className={styles.statDivider} />
             <div className={styles.stat}>
@@ -128,7 +128,7 @@ export default function LandingPage() {
             <span className="gradient-text"> capture brilliance</span>
           </h2>
           <p className={styles.sectionSubtitle}>
-            From quick notes to full meeting transcripts, NoteTaker handles it all.
+            From quick meetings to full transcripts, Amebo handles it all.
           </p>
         </div>
         <div className={styles.featureGrid}>
@@ -150,10 +150,10 @@ export default function LandingPage() {
       <section className={styles.cta}>
         <div className={`${styles.ctaCard} glass`}>
           <h2 className={styles.ctaTitle}>
-            Ready to <span className="gradient-text">supercharge</span> your notes?
+            Ready to <span className="gradient-text">supercharge</span> your meetings?
           </h2>
           <p className={styles.ctaSubtitle}>
-            Join thousands of teams using NoteTaker to capture every idea and meeting.
+            Join thousands of teams using Amebo to capture every meeting and idea.
           </p>
           <Link href="/register" className="btn-primary" style={{ padding: '16px 40px', fontSize: '1.1rem' }}>
             Get Started — It&apos;s Free
@@ -165,10 +165,10 @@ export default function LandingPage() {
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
-            <span className={styles.logoIcon}>📝</span>
-            <span>NoteTaker</span>
+            <span className={styles.logoIcon}>⚡</span>
+            <span>Amebo</span>
           </div>
-          <p className={styles.footerText}>© 2026 NoteTaker. Built for brilliant minds.</p>
+          <p className={styles.footerText}>© 2026 Amebo. Built for brilliant teams.</p>
         </div>
       </footer>
     </div>
