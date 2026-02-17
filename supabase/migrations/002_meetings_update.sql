@@ -14,8 +14,10 @@ ALTER TABLE meetings
   ADD COLUMN IF NOT EXISTS duration_minutes INTEGER DEFAULT 0,
   ADD COLUMN IF NOT EXISTS tags TEXT[] DEFAULT '{}';
 
--- Make organization_id optional (users can have personal meetings)
+-- Make columns optional for simple meeting creation
 ALTER TABLE meetings ALTER COLUMN organization_id DROP NOT NULL;
+ALTER TABLE meetings ALTER COLUMN meeting_link DROP NOT NULL;
+ALTER TABLE meetings ALTER COLUMN meeting_link SET DEFAULT '';
 
 -- Add RLS policy for user's own meetings
 CREATE POLICY "Users can CRUD own meetings"
