@@ -152,6 +152,7 @@ export default function DashboardPage() {
                 }
             } else {
                 console.warn('RunPod endpoint/key not set. Skipping transcription.');
+                alert('Transcription skipped: RUNPOD credentials not found. Please ensure you have added them to .env.local and RESTARTED the dev server (npm run dev).');
             }
             setIsTranscribing(false);
         }
