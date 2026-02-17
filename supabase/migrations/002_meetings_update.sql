@@ -20,10 +20,12 @@ ALTER TABLE meetings ALTER COLUMN meeting_link DROP NOT NULL;
 ALTER TABLE meetings ALTER COLUMN meeting_link SET DEFAULT '';
 
 -- Add RLS policy for user's own meetings
+DROP POLICY IF EXISTS "Users can CRUD own meetings" ON meetings;
 CREATE POLICY "Users can CRUD own meetings"
   ON meetings FOR ALL USING (auth.uid() = user_id);
 
 -- Auto-update trigger for meetings
+DROP TRIGGER IF EXISTS meetings_updated_at ON meetings;
 CREATE TRIGGER meetings_updated_at
   BEFORE UPDATE ON meetings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
