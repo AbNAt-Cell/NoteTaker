@@ -734,4 +734,345 @@
     .pageHeader {
         padding: 12px 16px 0;
     }
+
+    .gsHero {
+        padding: 40px 16px;
+    }
+
+    .gsTutorialCard {
+        flex-direction: column;
+    }
+
+    .gsTutorialVideo {
+        height: 200px;
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+}
+
+/* ---------- New View Layouts ---------- */
+.scrollArea {
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* ---------- Getting Started View ---------- */
+.gettingStarted {
+    padding-bottom: 60px;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.gsHero {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 32px;
+}
+
+.gsTitle {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #f0f0f5;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.gsSubtitle {
+    font-size: 1.1rem;
+    color: #888;
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.gsTutorialCard {
+    display: flex;
+    background: rgba(26, 26, 30, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 48px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.gsTutorialInfo {
+    flex: 1.2;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.gsTutorialInfo h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #e5e5e5;
+}
+
+.gsTutorialInfo p {
+    font-size: 0.92rem;
+    color: #888;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.gsWatchBtn {
+    width: fit-content;
+    padding: 10px 24px;
+    background: #a78bfa;
+    color: white;
+    font-weight: 600;
+    font-size: 0.88rem;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: all 150ms ease;
+}
+
+.gsWatchBtn:hover {
+    background: #7c3aed;
+    transform: translateY(-1px);
+}
+
+.gsTutorialVideo {
+    flex: 1;
+    background: linear-gradient(135deg, #1e1e24, #121217);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    position: relative;
+}
+
+.gsTutorialVideo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('https://images.unsplash.com/photo-1591115765373-520b7a21769b?auto=format&fit=crop&q=80&w=800') center/cover;
+    opacity: 0.3;
+}
+
+.gsPlayBtn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(167, 139, 250, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 1;
+    transition: all 200ms ease;
+}
+
+.gsTutorialVideo:hover .gsPlayBtn {
+    transform: scale(1.1);
+    background: #7c3aed;
+}
+
+.gsStepsHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+    margin-bottom: 16px;
+    color: #666;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+.gsProgress {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+}
+
+.gsSteps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.gsStep {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: rgba(26, 26, 30, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 150ms ease;
+}
+
+.gsStep:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.gsStepCheck {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    margin-right: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.gsStepCompleted .gsStepCheck {
+    background: #a78bfa;
+    border-color: #a78bfa;
+}
+
+.gsStepInfo {
+    flex: 1;
+}
+
+.gsStepInfo h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #e5e5e5;
+    margin-bottom: 2px;
+}
+
+.gsStepInfo p {
+    font-size: 0.82rem;
+    color: #666;
+}
+
+.gsStepCompleted h3 {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.gsStepArrow {
+    color: #444;
+    transition: transform 150ms ease;
+}
+
+.gsStep:hover .gsStepArrow {
+    color: #888;
+    transform: translateX(2px);
+}
+
+/* ---------- Tasks View ---------- */
+.tasksView {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.tasksContent {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+}
+
+.tasksEmpty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 400px;
+}
+
+.tasksEmptyIcon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+    margin-bottom: 20px;
+}
+
+.tasksEmptyTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #e5e5e5;
+    margin-bottom: 8px;
+}
+
+.tasksEmptySubtitle {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* ---------- Sidebar Enhancements ---------- */
+.navProgress {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: #7c3aed;
+    background: rgba(124, 58, 237, 0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.navBadge {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: #666;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.promoCard {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.promoHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #e5e5e5;
+}
+
+.promoClose {
+    border: none;
+    background: none;
+    color: #666;
+    font-size: 1.1rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.promoCard p {
+    font-size: 0.75rem;
+    color: #666;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.promoBtn {
+    width: 100%;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: #e5e5e5;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 150ms ease;
+}
+
+.promoBtn:hover {
+    background: rgba(255, 255, 255, 0.08);
 }
