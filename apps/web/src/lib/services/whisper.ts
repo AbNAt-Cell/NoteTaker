@@ -46,7 +46,7 @@ export async function transcribeAudio(
         },
         body: JSON.stringify({
             input: {
-                audio_base64: base64Audio,
+                audio: base64Audio,
                 model: 'large-v3',
                 language: 'en',
                 word_timestamps: true,
@@ -117,7 +117,7 @@ export async function transcribeAudioAsync(
         },
         body: JSON.stringify({
             input: {
-                audio_base64: base64Audio,
+                audio: base64Audio,
                 model: 'large-v3',
                 language: 'en',
                 word_timestamps: true,
