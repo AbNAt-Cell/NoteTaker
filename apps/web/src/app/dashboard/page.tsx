@@ -463,7 +463,7 @@ export default function DashboardPage() {
                                     {group.meetings.map(meeting => (
                                         <Link
                                             key={meeting.id}
-                                            href={`/notes/${meeting.id}`}
+                                            href={`/meetings/${meeting.id}`}
                                             className={styles.meetingCard}
                                         >
                                             <div className={styles.meetingContent}>
