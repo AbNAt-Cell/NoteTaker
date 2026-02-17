@@ -27,11 +27,16 @@ export async function transcribeAudio(
     endpoint: string,
     apiKey: string,
 ): Promise<WhisperResult> {
-    // Convert blob to base64
-    const arrayBuffer = await audioBlob.arrayBuffer();
-    const base64Audio = btoa(
-        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
-    );
+    // Convert blob to base64 robustly
+    const base64Audio = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64 = (reader.result as string).split(',')[1];
+            resolve(base64 || '');
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(audioBlob);
+    });
 
     const response = await fetch(`${endpoint}/runsync`, {
         method: 'POST',
@@ -92,11 +97,16 @@ export async function transcribeAudioAsync(
     apiKey: string,
     onProgress?: (status: string) => void,
 ): Promise<WhisperResult> {
-    // Convert blob to base64
-    const arrayBuffer = await audioBlob.arrayBuffer();
-    const base64Audio = btoa(
-        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
-    );
+    // Convert blob to base64 robustly
+    const base64Audio = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64 = (reader.result as string).split(',')[1];
+            resolve(base64 || '');
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(audioBlob);
+    });
 
     // Submit job
     const submitRes = await fetch(`${endpoint}/run`, {

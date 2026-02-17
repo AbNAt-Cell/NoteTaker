@@ -34,6 +34,7 @@ export default function DashboardPage() {
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const [showRecorder, setShowRecorder] = useState(false);
     const [isTranscribing, setIsTranscribing] = useState(false);
+    const [transcriptionStatus, setTranscriptionStatus] = useState('');
     const router = useRouter();
     const supabase = createClient();
 
@@ -109,11 +110,15 @@ export default function DashboardPage() {
 
             if (whisperEndpoint && whisperApiKey) {
                 try {
+                    setTranscriptionStatus('Starting...');
                     const result: WhisperResult = await transcribeAudioAsync(
                         data.audioBlob,
                         whisperEndpoint,
                         whisperApiKey,
-                        (status) => console.log('Transcription status:', status),
+                        (status) => {
+                            console.log('Transcription status:', status);
+                            setTranscriptionStatus(status);
+                        },
                     );
 
                     // Extract unique speakers from diarization
@@ -147,8 +152,9 @@ export default function DashboardPage() {
                         });
 
                     console.log('Transcription saved successfully');
-                } catch (err) {
+                } catch (err: any) {
                     console.error('Transcription error:', err);
+                    alert(`Transcription failed: ${err.message || 'Unknown error'}. Please check your RunPod settings.`);
                 }
             } else {
                 console.warn('RunPod endpoint/key not set. Skipping transcription.');
@@ -683,6 +689,18 @@ export default function DashboardPage() {
                     onClose={() => setShowRecorder(false)}
                     onSave={handleRecordingSave}
                 />
+            )}
+
+            {/* Transcription Overlay */}
+            {isTranscribing && (
+                <div className={styles.transcribingOverlay}>
+                    <div className={styles.transcribingCard}>
+                        <div className={styles.spinner}></div>
+                        <p>Amebo is transcribing your meeting...</p>
+                        <p className={styles.transcriptionProgress}>{transcriptionStatus}</p>
+                        <p className={styles.transcribingNote}>This may take a minute for longer recordings.</p>
+                    </div>
+                </div>
             )}
         </div>
     );

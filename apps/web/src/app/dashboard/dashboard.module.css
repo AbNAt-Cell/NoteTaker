@@ -1076,3 +1076,41 @@
 .promoBtn:hover {
     background: rgba(255, 255, 255, 0.08);
 }
+
+/* ---------- Transcription Overlay ---------- */
+.transcribingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.transcribingCard {
+    background: #1a1a1e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 32px;
+    border-radius: 20px;
+    text-align: center;
+    width: 320px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.transcriptionProgress {
+    font-size: 0.82rem;
+    color: #4ade80;
+    font-weight: 600;
+    margin: 12px 0;
+}
+
+.transcribingNote {
+    font-size: 0.75rem;
+    color: #666;
+}
