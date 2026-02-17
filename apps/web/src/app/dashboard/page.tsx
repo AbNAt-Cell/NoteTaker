@@ -76,7 +76,14 @@ export default function DashboardPage() {
             .select('id')
             .single();
 
-        if (!error && data) {
+        if (error) {
+            console.error('Error creating meeting:', error);
+            alert(`Failed to create meeting: ${error.message} (${error.code})\nDetail: ${error.details}\nHint: ${error.hint}`);
+            setCreatingMeeting(false);
+            return;
+        }
+
+        if (data) {
             router.push(`/notes/${data.id}`);
         }
         setCreatingMeeting(false);
