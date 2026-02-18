@@ -38,7 +38,10 @@ export async function transcribeAudio(
         reader.readAsDataURL(audioBlob);
     });
 
-    const response = await fetch(`${endpoint}/runsync`, {
+    // Base endpoint normalization
+    const baseEndpoint = endpoint.replace(/\/run(sync)?$/, '');
+
+    const response = await fetch(`${baseEndpoint}/runsync`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -47,6 +50,7 @@ export async function transcribeAudio(
         body: JSON.stringify({
             input: {
                 audio: base64Audio,
+                audio_base64: base64Audio,
                 model: 'large-v3',
                 language: 'en',
                 word_timestamps: true,
@@ -116,8 +120,14 @@ export async function transcribeAudioAsync(
         reader.readAsDataURL(audioBlob);
     });
 
+    // Base endpoint normalization (remove trailing /run or /runsync if provided)
+    const baseEndpoint = endpoint.replace(/\/run(sync)?$/, '');
+
     // Submit job
-    const submitRes = await fetch(`${endpoint}/run`, {
+    const submitUrl = `${baseEndpoint}/run`;
+    console.log('Submitting transcription job to:', submitUrl);
+
+    const submitRes = await fetch(submitUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -126,6 +136,7 @@ export async function transcribeAudioAsync(
         body: JSON.stringify({
             input: {
                 audio: base64Audio,
+                audio_base64: base64Audio, // Some public endpoints prefer this
                 model: 'large-v3',
                 language: 'en',
                 word_timestamps: true,
@@ -150,7 +161,8 @@ export async function transcribeAudioAsync(
         await new Promise(r => setTimeout(r, 5000)); // poll every 5s
         attempts++;
 
-        const statusRes = await fetch(`${endpoint}/status/${jobId}`, {
+        const statusUrl = `${baseEndpoint}/status/${jobId}`;
+        const statusRes = await fetch(statusUrl, {
             headers: { Authorization: `Bearer ${apiKey}` },
         });
 
