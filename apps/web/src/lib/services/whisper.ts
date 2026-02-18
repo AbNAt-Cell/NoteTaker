@@ -49,8 +49,10 @@ export async function transcribeAudio(
         },
         body: JSON.stringify({
             input: {
+                // Send under multiple keys to ensure compatibility with various workers
                 audio: base64Audio,
                 audio_base64: base64Audio,
+                url: base64Audio,
                 model: 'large-v3',
                 language: 'en',
                 word_timestamps: true,
@@ -135,8 +137,10 @@ export async function transcribeAudioAsync(
         },
         body: JSON.stringify({
             input: {
+                // Send under multiple keys to ensure compatibility with various workers
                 audio: base64Audio,
-                audio_base64: base64Audio, // Some public endpoints prefer this
+                audio_base64: base64Audio,
+                url: base64Audio,
                 model: 'large-v3',
                 language: 'en',
                 word_timestamps: true,
