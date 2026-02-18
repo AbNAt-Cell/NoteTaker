@@ -131,6 +131,7 @@ export default function DashboardPage() {
                         .update({
                             summary: result.text.slice(0, 500),
                             speakers,
+                            transcript_status: 'completed',
                         })
                         .eq('id', meetingData.id);
 

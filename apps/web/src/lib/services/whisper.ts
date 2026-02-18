@@ -152,6 +152,7 @@ export async function transcribeAudioAsync(
         onProgress?.(statusData.status || 'Processing...');
 
         if (statusData.status === 'COMPLETED') {
+            console.log('RunPod COMPLETED raw response:', statusData);
             const output = statusData.output || {};
             const segments: WhisperSegment[] = (output.segments || []).map((seg: {
                 speaker?: string;
