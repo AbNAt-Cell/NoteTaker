@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import RecordingWidget from './RecordingWidget';
-import { transcribeAudioAsync, WhisperResult } from '@/lib/services/whisper';
+import { transcribeAudio, WhisperResult } from '@/lib/services/whisper';
 import styles from './dashboard.module.css';
 
 interface MeetingItem {
@@ -103,82 +103,68 @@ export default function DashboardPage() {
         }
 
         if (meetingData && data.audioBlob) {
-            // Start transcription in the background
+            // Start transcription via OpenAI
             setIsTranscribing(true);
-            const whisperEndpoint = process.env.NEXT_PUBLIC_RUNPOD_ENDPOINT || '';
-            const whisperApiKey = process.env.NEXT_PUBLIC_RUNPOD_API_KEY || '';
 
-            if (whisperEndpoint && whisperApiKey) {
-                try {
-                    setTranscriptionStatus('Starting...');
-                    const result: WhisperResult = await transcribeAudioAsync(
-                        data.audioBlob,
-                        whisperEndpoint,
-                        whisperApiKey,
-                        (status) => {
-                            console.log('Transcription status:', status);
-                            setTranscriptionStatus(status);
-                        },
-                    );
+            try {
+                setTranscriptionStatus('Preparing audio...');
+                const result: WhisperResult = await transcribeAudio(
+                    data.audioBlob,
+                    (status) => {
+                        console.log('Transcription status:', status);
+                        setTranscriptionStatus(status);
+                    },
+                );
 
-                    // Extract unique speakers from diarization
-                    const speakers = [...new Set(result.segments.map(s => s.speaker))];
+                console.log('Transcription result:', { textLength: result.text.length, segments: result.segments.length });
 
-                    // Update meeting with transcription results
-                    console.log('Updating meeting with summary for id:', meetingData.id);
-                    const safeText = typeof result.text === 'string' ? result.text : '';
+                // Extract unique speakers from diarization
+                const speakers = [...new Set(result.segments.map(s => s.speaker))];
 
-                    const { error: updateError } = await supabase
-                        .from('meetings')
-                        .update({
-                            summary: safeText.slice(0, 500),
-                            speakers,
-                            transcript_status: 'completed',
-                        })
-                        .eq('id', meetingData.id);
+                // Update meeting with transcription results
+                const { error: updateError } = await supabase
+                    .from('meetings')
+                    .update({
+                        summary: result.text.slice(0, 500),
+                        speakers,
+                        transcript_status: 'completed',
+                    })
+                    .eq('id', meetingData.id);
 
-                    if (updateError) {
-                        console.error('Error updating meeting summary:', updateError);
-                    } else {
-                        console.log('Meeting summary updated successfully');
-                    }
-
-                    // Store transcript segments
-                    console.log('Inserting transcript segments...');
-                    const { error: transError } = await supabase
-                        .from('transcripts')
-                        .insert({
-                            meeting_id: meetingData.id,
-                            raw_text: result.text,
-                            cleaned_text: result.text,
-                            summary: result.text.slice(0, 500),
-                            action_items: JSON.stringify(
-                                result.segments.map(s => ({
-                                    speaker: s.speaker,
-                                    text: s.text,
-                                    start: s.start,
-                                    end: s.end,
-                                })),
-                            ),
-                        });
-
-                    if (transError) {
-                        console.error('Error inserting transcript:', transError);
-                    } else {
-                        console.log('Transcript inserted successfully');
-                    }
-
-                    console.log('Transcription saved successfully');
-                } catch (err: any) {
-                    console.error('Transcription error:', err);
-                    alert(`Transcription failed: ${err.message || 'Unknown error'}. Please check your RunPod settings.`);
+                if (updateError) {
+                    console.error('Error updating meeting summary:', updateError);
                 }
-            } else {
-                console.warn('RunPod endpoint/key not set. Skipping transcription.');
-                alert('Transcription skipped: RUNPOD credentials not found. Please ensure you have added them to .env.local and RESTARTED the dev server (npm run dev).');
+
+                // Store transcript segments
+                const { error: transError } = await supabase
+                    .from('transcripts')
+                    .insert({
+                        meeting_id: meetingData.id,
+                        raw_text: result.text,
+                        cleaned_text: result.text,
+                        summary: result.text.slice(0, 500),
+                        action_items: JSON.stringify(
+                            result.segments.map(s => ({
+                                speaker: s.speaker,
+                                text: s.text,
+                                start: s.start,
+                                end: s.end,
+                            })),
+                        ),
+                    });
+
+                if (transError) {
+                    console.error('Error inserting transcript:', transError);
+                } else {
+                    console.log('Transcription saved successfully');
+                }
+            } catch (err: any) {
+                console.error('Transcription error:', err);
+                alert(`Transcription failed: ${err.message || 'Unknown error'}`);
             }
             setIsTranscribing(false);
         }
+
 
         // Refresh meetings list and navigate
         if (meetingData) {
