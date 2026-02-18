@@ -152,26 +152,36 @@ export async function transcribeAudioAsync(
         onProgress?.(statusData.status || 'Processing...');
 
         if (statusData.status === 'COMPLETED') {
-            console.log('RunPod COMPLETED raw response:', statusData);
-            const output = statusData.output || {};
-            const segments: WhisperSegment[] = (output.segments || []).map((seg: {
-                speaker?: string;
-                text?: string;
-                start?: number;
-                end?: number;
-            }) => ({
-                speaker: seg.speaker || 'Speaker 1',
-                text: seg.text || '',
-                start: seg.start || 0,
-                end: seg.end || 0,
+            const rawOutput = statusData.output || {};
+            console.log('RunPod Output Keys:', Object.keys(rawOutput));
+
+            // Handle various Whisper worker output formats
+            const text = rawOutput.text || rawOutput.transcription || rawOutput.transcription_text || '';
+            const rawSegments = rawOutput.segments || rawOutput.transcription_segments || [];
+
+            console.log('Raw text length:', text?.length || 0);
+            console.log('Raw segments count:', rawSegments?.length || 0);
+
+            const segments: WhisperSegment[] = (rawSegments || []).map((seg: any) => ({
+                speaker: seg.speaker || seg.speaker_label || 'Speaker 1',
+                text: seg.text || seg.transcription || '',
+                start: seg.start !== undefined ? seg.start : 0,
+                end: seg.end !== undefined ? seg.end : 0,
             }));
 
-            return {
-                text: output.text || segments.map((s: WhisperSegment) => s.text).join(' '),
+            const finalResult = {
+                text: text || segments.map((s: WhisperSegment) => s.text).join(' '),
                 segments,
-                language: output.language || 'en',
-                duration: output.duration || 0,
+                language: rawOutput.language || 'en',
+                duration: rawOutput.duration || 0,
             };
+
+            console.log('Final normalized result:', {
+                textLength: finalResult.text.length,
+                segmentCount: finalResult.segments.length
+            });
+
+            return finalResult;
         }
 
         if (statusData.status === 'FAILED') {
