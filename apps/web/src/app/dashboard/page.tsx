@@ -126,10 +126,12 @@ export default function DashboardPage() {
 
                     // Update meeting with transcription results
                     console.log('Updating meeting with summary for id:', meetingData.id);
+                    const safeText = typeof result.text === 'string' ? result.text : '';
+
                     const { error: updateError } = await supabase
                         .from('meetings')
                         .update({
-                            summary: result.text.slice(0, 500),
+                            summary: safeText.slice(0, 500),
                             speakers,
                             transcript_status: 'completed',
                         })

@@ -63,24 +63,32 @@ export async function transcribeAudio(
 
     const data = await response.json();
 
-    // RunPod wraps the output
     const output = data.output || data;
 
+    let text = output.text || '';
+    let rawSegments = output.segments || [];
+
+    // Handle nested transcription object
+    if (output.transcription && typeof output.transcription === 'object') {
+        text = output.transcription.text || text;
+        rawSegments = output.transcription.segments || rawSegments;
+    }
+
+    // Fallback for other keys
+    if (!text && typeof output.transcription === 'string') text = output.transcription;
+    if (!text && output.transcription_text) text = output.transcription_text;
+    if (rawSegments.length === 0 && output.transcription_segments) rawSegments = output.transcription_segments;
+
     // Normalize segments to our format
-    const segments: WhisperSegment[] = (output.segments || []).map((seg: {
-        speaker?: string;
-        text?: string;
-        start?: number;
-        end?: number;
-    }) => ({
-        speaker: seg.speaker || 'Speaker 1',
-        text: seg.text || '',
-        start: seg.start || 0,
-        end: seg.end || 0,
+    const segments: WhisperSegment[] = (Array.isArray(rawSegments) ? rawSegments : []).map((seg: any) => ({
+        speaker: seg.speaker || seg.speaker_label || 'Speaker 1',
+        text: seg.text || seg.transcription || '',
+        start: seg.start !== undefined ? seg.start : 0,
+        end: seg.end !== undefined ? seg.end : 0,
     }));
 
     return {
-        text: output.text || segments.map((s: WhisperSegment) => s.text).join(' '),
+        text: typeof text === 'string' ? text : segments.map((s: WhisperSegment) => s.text).join(' '),
         segments,
         language: output.language || 'en',
         duration: output.duration || 0,
@@ -155,14 +163,24 @@ export async function transcribeAudioAsync(
             const rawOutput = statusData.output || {};
             console.log('RunPod Output Keys:', Object.keys(rawOutput));
 
-            // Handle various Whisper worker output formats
-            const text = rawOutput.text || rawOutput.transcription || rawOutput.transcription_text || '';
-            const rawSegments = rawOutput.segments || rawOutput.transcription_segments || [];
+            let text = rawOutput.text || '';
+            let rawSegments = rawOutput.segments || [];
 
-            console.log('Raw text length:', text?.length || 0);
-            console.log('Raw segments count:', rawSegments?.length || 0);
+            // Handle nested transcription object (common in some workers)
+            if (rawOutput.transcription && typeof rawOutput.transcription === 'object') {
+                text = rawOutput.transcription.text || text;
+                rawSegments = rawOutput.transcription.segments || rawSegments;
+            }
 
-            const segments: WhisperSegment[] = (rawSegments || []).map((seg: any) => ({
+            // Fallback for other potential keys
+            if (!text && typeof rawOutput.transcription === 'string') text = rawOutput.transcription;
+            if (!text && rawOutput.transcription_text) text = rawOutput.transcription_text;
+            if (rawSegments.length === 0 && rawOutput.transcription_segments) rawSegments = rawOutput.transcription_segments;
+
+            console.log('Normalized text length:', typeof text === 'string' ? text.length : 'NOT A STRING');
+            console.log('Normalized segments count:', Array.isArray(rawSegments) ? rawSegments.length : 'NOT AN ARRAY');
+
+            const segments: WhisperSegment[] = (Array.isArray(rawSegments) ? rawSegments : []).map((seg: any) => ({
                 speaker: seg.speaker || seg.speaker_label || 'Speaker 1',
                 text: seg.text || seg.transcription || '',
                 start: seg.start !== undefined ? seg.start : 0,
@@ -170,7 +188,7 @@ export async function transcribeAudioAsync(
             }));
 
             const finalResult = {
-                text: text || segments.map((s: WhisperSegment) => s.text).join(' '),
+                text: typeof text === 'string' ? text : segments.map((s: WhisperSegment) => s.text).join(' '),
                 segments,
                 language: rawOutput.language || 'en',
                 duration: rawOutput.duration || 0,
