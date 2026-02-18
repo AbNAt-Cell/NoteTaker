@@ -237,32 +237,57 @@ export default function MeetingPage({ params }: MeetingPageProps) {
         </div>
     );
 
-    const renderTranscript = () => (
-        <div className={styles.tabContent}>
-            <button className={styles.copyBtn}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-                Copy transcript
-            </button>
+    // Merge consecutive same-speaker segments for cleaner display
+    const mergeSegments = (segs: TranscriptSegment[]): TranscriptSegment[] => {
+        if (segs.length === 0) return [];
+        const merged: TranscriptSegment[] = [];
+        let current = { ...segs[0] };
 
-            {segments.length > 0 ? (
-                <div className={styles.transcriptList}>
-                    {segments.map((seg, i) => (
-                        <div key={i} className={styles.transcriptBlock}>
-                            <h4 className={styles.speakerName}>{seg.speaker}</h4>
-                            <span className={styles.timestamp}>
-                                {formatTimestamp(seg.start)} - {formatTimestamp(seg.end)}
-                            </span>
-                            <p className={styles.transcriptText}>{seg.text}</p>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className={styles.emptyTab}>
-                    <p>No transcript available yet. Record a meeting to generate a transcript.</p>
-                </div>
-            )}
-        </div>
-    );
+        for (let i = 1; i < segs.length; i++) {
+            if (segs[i].speaker === current.speaker) {
+                // Same speaker — merge text and extend end time
+                current.text += ' ' + segs[i].text;
+                current.end = segs[i].end;
+            } else {
+                // Different speaker — push current and start new block
+                merged.push(current);
+                current = { ...segs[i] };
+            }
+        }
+        merged.push(current);
+        return merged;
+    };
+
+    const renderTranscript = () => {
+        const mergedSegments = mergeSegments(segments);
+
+        return (
+            <div className={styles.tabContent}>
+                <button className={styles.copyBtn}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                    Copy transcript
+                </button>
+
+                {mergedSegments.length > 0 ? (
+                    <div className={styles.transcriptList}>
+                        {mergedSegments.map((seg, i) => (
+                            <div key={i} className={styles.transcriptBlock}>
+                                <h4 className={styles.speakerName}>{seg.speaker}</h4>
+                                <span className={styles.timestamp}>
+                                    {formatTimestamp(seg.start)} - {formatTimestamp(seg.end)}
+                                </span>
+                                <p className={styles.transcriptText}>{seg.text}</p>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className={styles.emptyTab}>
+                        <p>No transcript available yet. Record a meeting to generate a transcript.</p>
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     const renderTasks = () => (
         <div className={styles.tabContent}>
