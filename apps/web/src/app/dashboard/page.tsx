@@ -125,7 +125,8 @@ export default function DashboardPage() {
                     const speakers = [...new Set(result.segments.map(s => s.speaker))];
 
                     // Update meeting with transcription results
-                    await supabase
+                    console.log('Updating meeting with summary for id:', meetingData.id);
+                    const { error: updateError } = await supabase
                         .from('meetings')
                         .update({
                             summary: result.text.slice(0, 500),
@@ -133,8 +134,15 @@ export default function DashboardPage() {
                         })
                         .eq('id', meetingData.id);
 
+                    if (updateError) {
+                        console.error('Error updating meeting summary:', updateError);
+                    } else {
+                        console.log('Meeting summary updated successfully');
+                    }
+
                     // Store transcript segments
-                    await supabase
+                    console.log('Inserting transcript segments...');
+                    const { error: transError } = await supabase
                         .from('transcripts')
                         .insert({
                             meeting_id: meetingData.id,
@@ -150,6 +158,12 @@ export default function DashboardPage() {
                                 })),
                             ),
                         });
+
+                    if (transError) {
+                        console.error('Error inserting transcript:', transError);
+                    } else {
+                        console.log('Transcript inserted successfully');
+                    }
 
                     console.log('Transcription saved successfully');
                 } catch (err: any) {

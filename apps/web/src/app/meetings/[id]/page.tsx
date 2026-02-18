@@ -55,6 +55,7 @@ export default function MeetingPage({ params }: MeetingPageProps) {
                 return;
             }
 
+            console.log('Fetching meeting data for id:', meetingId);
             const { data: meeting, error } = await supabase
                 .from('meetings')
                 .select('*')
@@ -63,10 +64,12 @@ export default function MeetingPage({ params }: MeetingPageProps) {
                 .single();
 
             if (error || !meeting) {
+                console.error('Error fetching meeting:', error);
                 router.push('/dashboard');
                 return;
             }
 
+            console.log('Meeting data fetched:', meeting);
             setTitle(meeting.title || 'Untitled Meeting');
             setScheduledAt(meeting.scheduled_at || '');
             setDurationMinutes(meeting.duration_minutes || 0);
@@ -75,13 +78,19 @@ export default function MeetingPage({ params }: MeetingPageProps) {
             setScratchpad(meeting.scratchpad_notes || '');
 
             // Load transcript
-            const { data: transcript } = await supabase
+            console.log('Fetching transcript for meeting_id:', meetingId);
+            const { data: transcript, error: transError } = await supabase
                 .from('transcripts')
                 .select('*')
                 .eq('meeting_id', meetingId)
                 .single();
 
+            if (transError) {
+                console.warn('Transcript fetch error (might not exist yet):', transError);
+            }
+
             if (transcript) {
+                console.log('Transcript data fetched:', transcript);
                 setSummary(transcript.summary || transcript.cleaned_text || transcript.raw_text || '');
 
                 // Parse diarized segments from action_items JSONB
