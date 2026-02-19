@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -75,18 +75,8 @@ export async function GET(request: NextRequest) {
             calendarEmail = profile.email || '';
         }
 
-        // Store in Supabase using service-level access
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-        // Use the cookie to act as the user
-        const cookieHeader = request.headers.get('cookie') || '';
-        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-            global: {
-                headers: { cookie: cookieHeader },
-            },
-        });
-
+        // Store in Supabase
+        const supabase = await createServerSupabaseClient();
         const expiresAt = new Date(Date.now() + (expires_in || 3600) * 1000).toISOString();
 
         // Upsert the connection (update if already exists for this user+provider)

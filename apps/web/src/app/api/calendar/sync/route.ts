@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 async function refreshAccessToken(refreshToken: string): Promise<{ access_token: string; expires_in: number } | null> {
     const res = await fetch('https://oauth2.googleapis.com/token', {
@@ -28,14 +28,8 @@ async function refreshAccessToken(refreshToken: string): Promise<{ access_token:
     return res.json();
 }
 
-export async function POST(request: NextRequest) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-    const cookieHeader = request.headers.get('cookie') || '';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-        global: { headers: { cookie: cookieHeader } },
-    });
+export async function POST(_request: NextRequest) {
+    const supabase = await createServerSupabaseClient();
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -49,7 +43,7 @@ export async function POST(request: NextRequest) {
         .eq('user_id', user.id)
         .eq('provider', 'google')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
     if (connError || !connection) {
         return NextResponse.json({ error: 'No calendar connected' }, { status: 404 });
@@ -134,7 +128,7 @@ export async function POST(request: NextRequest) {
                 .select('id')
                 .eq('user_id', user.id)
                 .eq('google_event_id', event.id)
-                .single();
+                .maybeSingle();
 
             if (existing) {
                 // Update existing meeting

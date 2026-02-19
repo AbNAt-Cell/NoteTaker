@@ -5,20 +5,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-export async function GET(request: NextRequest) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-    const cookieHeader = request.headers.get('cookie') || '';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-        global: { headers: { cookie: cookieHeader } },
-    });
+export async function GET(_request: NextRequest) {
+    const supabase = await createServerSupabaseClient();
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+        return NextResponse.json({ connected: false, connection: null });
     }
 
     const { data: connection } = await supabase
@@ -27,7 +21,7 @@ export async function GET(request: NextRequest) {
         .eq('user_id', user.id)
         .eq('provider', 'google')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
     return NextResponse.json({
         connected: !!connection,
@@ -36,14 +30,8 @@ export async function GET(request: NextRequest) {
 }
 
 // Disconnect calendar
-export async function DELETE(request: NextRequest) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-    const cookieHeader = request.headers.get('cookie') || '';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-        global: { headers: { cookie: cookieHeader } },
-    });
+export async function DELETE(_request: NextRequest) {
+    const supabase = await createServerSupabaseClient();
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {

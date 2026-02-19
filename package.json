@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "start": "cd apps/web && npm start",
     "lint": "turbo run lint"
   },
   "devDependencies": {

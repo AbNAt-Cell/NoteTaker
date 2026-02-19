@@ -6,14 +6,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 const SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',
     'https://www.googleapis.com/auth/userinfo.email',
 ].join(' ');
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
@@ -21,18 +21,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Google OAuth not configured' }, { status: 500 });
     }
 
-    // Get the current user's session from the cookie
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-    // Extract auth token from cookie
-    const cookieHeader = request.headers.get('cookie') || '';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-        global: {
-            headers: { cookie: cookieHeader },
-        },
-    });
-
+    const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {

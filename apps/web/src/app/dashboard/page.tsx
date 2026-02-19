@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import RecordingWidget from './RecordingWidget';
 import AskAI from './AskAI';
+import MicDetector from './MicDetector';
 import { transcribeAudio, WhisperResult } from '@/lib/services/whisper';
 import styles from './dashboard.module.css';
 
@@ -803,6 +804,12 @@ export default function DashboardPage() {
                 {/* Ask AI Chat Panel */}
                 <AskAI meetingContext={meetings.map(m => `Meeting: ${m.title} (${m.scheduled_at || 'undated'})\nSummary: ${m.summary || 'No summary'}\nSpeakers: ${(m.speakers || []).join(', ') || 'Unknown'}`).join('\n\n---\n\n')} />
             </main>
+
+            {/* Mic Activity Detector */}
+            <MicDetector
+                onStartRecording={() => setShowRecorder(true)}
+                isRecording={showRecorder || isTranscribing}
+            />
 
             {/* Recording Widget */}
             {showRecorder && (
