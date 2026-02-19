@@ -43,6 +43,7 @@ export default function MeetingPage({ params }: MeetingPageProps) {
     const [newTag, setNewTag] = useState('');
     const [showTagInput, setShowTagInput] = useState(false);
     const [newTaskText, setNewTaskText] = useState('');
+    const [userEmail, setUserEmail] = useState('');
 
     const router = useRouter();
     const supabase = createClient();
@@ -55,6 +56,7 @@ export default function MeetingPage({ params }: MeetingPageProps) {
                 router.push('/login');
                 return;
             }
+            setUserEmail(user.email || '');
 
             console.log('Fetching meeting data for id:', meetingId);
             const { data: meeting, error } = await supabase
@@ -194,17 +196,103 @@ export default function MeetingPage({ params }: MeetingPageProps) {
         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     };
 
+    // ── Merge consecutive same-speaker segments ───────────
+    const mergeSegments = (segs: TranscriptSegment[]): TranscriptSegment[] => {
+        if (segs.length === 0) return [];
+        const merged: TranscriptSegment[] = [];
+        let current = { ...segs[0] };
+
+        for (let i = 1; i < segs.length; i++) {
+            if (segs[i].speaker === current.speaker) {
+                current.text += ' ' + segs[i].text;
+                current.end = segs[i].end;
+            } else {
+                merged.push(current);
+                current = { ...segs[i] };
+            }
+        }
+        merged.push(current);
+        return merged;
+    };
+
+    // ── Sidebar ───────────────────────────────────────────
+    const renderSidebar = () => {
+        const initial = userEmail ? userEmail.charAt(0).toUpperCase() : 'A';
+        const displayName = userEmail ? userEmail.split('@')[0] : 'User';
+
+        return (
+            <aside className={styles.sidebar}>
+                <div className={styles.sidebarHeader}>
+                    <div className={styles.userProfile}>
+                        <div className={styles.avatar}>{initial}</div>
+                        <span className={styles.userName}>{displayName}</span>
+                        <svg className={styles.chevron} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
+                    </div>
+                </div>
+
+                <Link href="/dashboard" className={styles.startBtn}>
+                    ⚡ Start Amebo
+                </Link>
+
+                <nav className={styles.sidebarNav}>
+                    <Link href="/dashboard" className={styles.navItem}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg>
+                        Getting started
+                    </Link>
+                    <Link href="/dashboard" className={`${styles.navItem} ${styles.navItemActive}`}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                        Meetings
+                    </Link>
+                    <Link href="/dashboard?view=tasks" className={styles.navItem}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                        Tasks
+                    </Link>
+                </nav>
+
+                <div className={styles.tagsSection}>
+                    <div className={styles.tagsSectionTitle}>Tags</div>
+                    {tags.map((tag, i) => (
+                        <div key={i} className={styles.navItem} style={{ fontSize: '0.85rem' }}>
+                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#7c3aed', flexShrink: 0 }} />
+                            {tag}
+                        </div>
+                    ))}
+                </div>
+
+                <div className={styles.promoCard}>
+                    <div className={styles.promoTitle}>🔓 Unlock the power of Amebo</div>
+                    <p className={styles.promoText}>
+                        Connect your Google Calendar or Outlook to unlock meeting title sync and improved speaker identification.
+                    </p>
+                    <button className={styles.promoBtn}>Connect Calendar</button>
+                </div>
+
+                <div className={styles.sidebarFooter}>
+                    <div className={styles.sidebarFooterItem}>
+                        <span>🎁 Refer & earn</span>
+                    </div>
+                </div>
+            </aside>
+        );
+    };
+
     // ── Loading ───────────────────────────────────────────
     if (loading) {
         return (
             <div className={styles.page}>
-                <div className={styles.loading}>
-                    <div className={styles.spinner} />
-                    <p>Loading meeting...</p>
+                {renderSidebar()}
+                <div className={styles.main}>
+                    <div className={styles.loading}>
+                        <div className={styles.spinner} />
+                        <p>Loading meeting...</p>
+                    </div>
                 </div>
             </div>
         );
     }
+
+    // ── Processing Progress (shown when no summary yet) ──
+    const isProcessing = !summary && segments.length === 0;
 
     // ── Tab content renderers ─────────────────────────────
     const renderSummary = () => (
@@ -221,7 +309,32 @@ export default function MeetingPage({ params }: MeetingPageProps) {
                 </button>
             </div>
 
-            {summary ? (
+            {isProcessing ? (
+                <div className={styles.processingCard}>
+                    <div className={styles.processingHeader}>
+                        <span className={styles.processingTitle}>Creating summary and transcript</span>
+                        <span className={styles.processingTime}>It will take ~5 more minutes</span>
+                    </div>
+                    <div className={styles.processingSteps}>
+                        <div className={`${styles.processingStep} ${styles.stepActive}`}>
+                            <span className={styles.stepIcon}><span className={styles.stepSpinner} /></span>
+                            Transcribing
+                        </div>
+                        <div className={styles.processingStep}>
+                            <span className={styles.stepIcon}><span className={styles.stepCircle} /></span>
+                            Speaker memory
+                        </div>
+                        <div className={styles.processingStep}>
+                            <span className={styles.stepIcon}><span className={styles.stepCircle} /></span>
+                            Summary
+                        </div>
+                        <div className={styles.processingStep}>
+                            <span className={styles.stepIcon}><span className={styles.stepCircle} /></span>
+                            Tasks
+                        </div>
+                    </div>
+                </div>
+            ) : summary ? (
                 <div className={styles.summaryContent}>
                     <div className={styles.summaryText}>
                         <ReactMarkdown>{summary}</ReactMarkdown>
@@ -234,27 +347,6 @@ export default function MeetingPage({ params }: MeetingPageProps) {
             )}
         </div>
     );
-
-    // Merge consecutive same-speaker segments for cleaner display
-    const mergeSegments = (segs: TranscriptSegment[]): TranscriptSegment[] => {
-        if (segs.length === 0) return [];
-        const merged: TranscriptSegment[] = [];
-        let current = { ...segs[0] };
-
-        for (let i = 1; i < segs.length; i++) {
-            if (segs[i].speaker === current.speaker) {
-                // Same speaker — merge text and extend end time
-                current.text += ' ' + segs[i].text;
-                current.end = segs[i].end;
-            } else {
-                // Different speaker — push current and start new block
-                merged.push(current);
-                current = { ...segs[i] };
-            }
-        }
-        merged.push(current);
-        return merged;
-    };
 
     const renderTranscript = () => {
         const mergedSegments = mergeSegments(segments);
@@ -327,7 +419,7 @@ export default function MeetingPage({ params }: MeetingPageProps) {
             ) : (
                 <div className={styles.emptyTab}>
                     <div className={styles.emptyIcon}>
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ddd" strokeWidth="1.5"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#444" strokeWidth="1.5"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
                     </div>
                     <h4>No tasks</h4>
                     <p>You can add tasks manually.</p>
@@ -356,101 +448,105 @@ export default function MeetingPage({ params }: MeetingPageProps) {
 
     return (
         <div className={styles.page}>
-            {/* Header */}
-            <div className={styles.topBar}>
-                <div className={styles.breadcrumb}>
-                    <Link href="/dashboard" className={styles.breadcrumbLink}>Meetings</Link>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-                    <span className={styles.breadcrumbCurrent}>{title}</span>
-                </div>
-                <div className={styles.topActions}>
-                    <button className={styles.shareBtn}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><line x1="20" y1="8" x2="20" y2="14" /><line x1="23" y1="11" x2="17" y2="11" /></svg>
-                        Share
-                    </button>
-                    <button className={styles.linkBtn}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
-                    </button>
-                    <button className={styles.moreBtn}>⋯</button>
-                </div>
-            </div>
+            {renderSidebar()}
 
-            {/* Main content */}
-            <div className={styles.content}>
-                {/* Title */}
-                <input
-                    className={styles.meetingTitle}
-                    value={title}
-                    onChange={e => setTitle(e.target.value)}
-                    onBlur={e => saveTitle(e.target.value)}
-                />
-
-                {/* Metadata */}
-                <div className={styles.metadata}>
-                    <div className={styles.metaRow}>
-                        <span className={styles.metaLabel}>Time</span>
-                        <span className={styles.metaValue}>{formatTime(scheduledAt)}</span>
+            <div className={styles.main}>
+                {/* Header */}
+                <div className={styles.topBar}>
+                    <div className={styles.breadcrumb}>
+                        <Link href="/dashboard" className={styles.breadcrumbLink}>Meetings</Link>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+                        <span className={styles.breadcrumbCurrent}>{title}</span>
                     </div>
-                    <div className={styles.metaRow}>
-                        <span className={styles.metaLabel}>Speakers</span>
-                        <span className={styles.metaValue}>
-                            {speakers.length > 0 ? (
-                                speakers.map((s, i) => <span key={i} className={styles.speakerChip}>{s}</span>)
-                            ) : (
-                                <button className={styles.identifyBtn}>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><line x1="20" y1="8" x2="20" y2="14" /><line x1="23" y1="11" x2="17" y2="11" /></svg>
-                                    Identify speakers
-                                </button>
-                            )}
-                        </span>
-                    </div>
-                    <div className={styles.metaRow}>
-                        <span className={styles.metaLabel}>Tags</span>
-                        <span className={styles.metaValue}>
-                            {tags.map((tag, i) => (
-                                <span key={i} className={styles.tagChip}>
-                                    {tag}
-                                    <button className={styles.tagRemove} onClick={() => removeTag(i)}>✕</button>
-                                </span>
-                            ))}
-                            {showTagInput ? (
-                                <input
-                                    className={styles.tagInput}
-                                    value={newTag}
-                                    onChange={e => setNewTag(e.target.value)}
-                                    onKeyDown={e => e.key === 'Enter' && addTag()}
-                                    onBlur={addTag}
-                                    placeholder="Tag name..."
-                                    autoFocus
-                                />
-                            ) : (
-                                <button className={styles.addTagBtn} onClick={() => setShowTagInput(true)}>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
-                                    Add tag
-                                </button>
-                            )}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Tabs */}
-                <div className={styles.tabs}>
-                    {(['summary', 'transcript', 'tasks', 'scratchpad'] as TabId[]).map(tab => (
-                        <button
-                            key={tab}
-                            className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ''}`}
-                            onClick={() => setActiveTab(tab)}
-                        >
-                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    <div className={styles.topActions}>
+                        <button className={styles.shareBtn}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><line x1="20" y1="8" x2="20" y2="14" /><line x1="23" y1="11" x2="17" y2="11" /></svg>
+                            Share
                         </button>
-                    ))}
+                        <button className={styles.linkBtn}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
+                        </button>
+                        <button className={styles.moreBtn}>⋯</button>
+                    </div>
                 </div>
 
-                {/* Tab content */}
-                {tabContent[activeTab]()}
-            </div>
+                {/* Main content */}
+                <div className={styles.content}>
+                    {/* Title */}
+                    <input
+                        className={styles.meetingTitle}
+                        value={title}
+                        onChange={e => setTitle(e.target.value)}
+                        onBlur={e => saveTitle(e.target.value)}
+                    />
 
-            {saving && <div className={styles.savingIndicator}>Saving...</div>}
+                    {/* Metadata */}
+                    <div className={styles.metadata}>
+                        <div className={styles.metaRow}>
+                            <span className={styles.metaLabel}>Time</span>
+                            <span className={styles.metaValue}>{formatTime(scheduledAt)}</span>
+                        </div>
+                        <div className={styles.metaRow}>
+                            <span className={styles.metaLabel}>Speakers</span>
+                            <span className={styles.metaValue}>
+                                {speakers.length > 0 ? (
+                                    speakers.map((s, i) => <span key={i} className={styles.speakerChip}>{s}</span>)
+                                ) : (
+                                    <button className={styles.identifyBtn}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><line x1="20" y1="8" x2="20" y2="14" /><line x1="23" y1="11" x2="17" y2="11" /></svg>
+                                        Identify speakers
+                                    </button>
+                                )}
+                            </span>
+                        </div>
+                        <div className={styles.metaRow}>
+                            <span className={styles.metaLabel}>Tags</span>
+                            <span className={styles.metaValue}>
+                                {tags.map((tag, i) => (
+                                    <span key={i} className={styles.tagChip}>
+                                        {tag}
+                                        <button className={styles.tagRemove} onClick={() => removeTag(i)}>✕</button>
+                                    </span>
+                                ))}
+                                {showTagInput ? (
+                                    <input
+                                        className={styles.tagInput}
+                                        value={newTag}
+                                        onChange={e => setNewTag(e.target.value)}
+                                        onKeyDown={e => e.key === 'Enter' && addTag()}
+                                        onBlur={addTag}
+                                        placeholder="Tag name..."
+                                        autoFocus
+                                    />
+                                ) : (
+                                    <button className={styles.addTagBtn} onClick={() => setShowTagInput(true)}>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+                                        Add tag
+                                    </button>
+                                )}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Tabs */}
+                    <div className={styles.tabs}>
+                        {(['summary', 'transcript', 'tasks', 'scratchpad'] as TabId[]).map(tab => (
+                            <button
+                                key={tab}
+                                className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ''}`}
+                                onClick={() => setActiveTab(tab)}
+                            >
+                                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Tab content */}
+                    {tabContent[activeTab]()}
+                </div>
+
+                {saving && <div className={styles.savingIndicator}>Saving...</div>}
+            </div>
         </div>
     );
 }

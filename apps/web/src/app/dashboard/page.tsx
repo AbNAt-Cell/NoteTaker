@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import RecordingWidget from './RecordingWidget';
+import AskAI from './AskAI';
 import { transcribeAudio, WhisperResult } from '@/lib/services/whisper';
 import styles from './dashboard.module.css';
 
@@ -700,13 +701,8 @@ export default function DashboardPage() {
                     {renderMainContent()}
                 </div>
 
-                {/* Ask AI FAB */}
-                <button className={styles.askAiFab}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                    </svg>
-                    Ask AI
-                </button>
+                {/* Ask AI Chat Panel */}
+                <AskAI meetingContext={meetings.map(m => `Meeting: ${m.title} (${m.scheduled_at || 'undated'})\nSummary: ${m.summary || 'No summary'}\nSpeakers: ${(m.speakers || []).join(', ') || 'Unknown'}`).join('\n\n---\n\n')} />
             </main>
 
             {/* Recording Widget */}
