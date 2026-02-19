@@ -43,13 +43,20 @@ export async function POST(request: NextRequest) {
         openaiForm.append('response_format', 'verbose_json');
         openaiForm.append('timestamp_granularities[]', 'segment');
 
+        // Explicit timeout for self-hosted environments (maxDuration only works on Vercel)
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 110_000);
+
         const openaiRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${apiKey}`,
             },
             body: openaiForm,
+            signal: controller.signal,
         });
+
+        clearTimeout(timeout);
 
         if (!openaiRes.ok) {
             const errorText = await openaiRes.text();
@@ -78,7 +85,14 @@ export async function POST(request: NextRequest) {
             duration: result.duration || 0,
         });
     } catch (err: any) {
-        console.error('[Transcribe] Server error:', err);
+        if (err.name === 'AbortError') {
+            console.error('[Transcribe] Request timed out after 110s');
+            return NextResponse.json(
+                { error: 'Transcription timed out — the audio may be too long.' },
+                { status: 504 },
+            );
+        }
+        console.error('[Transcribe] Server error:', err?.message || err);
         return NextResponse.json(
             { error: err.message || 'Internal server error' },
             { status: 500 },

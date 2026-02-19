@@ -46,8 +46,18 @@ export async function transcribeAudio(
     });
 
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `Transcription failed (${response.status})`);
+        let errorMessage = `Transcription failed (${response.status})`;
+        try {
+            const text = await response.text();
+            try {
+                const json = JSON.parse(text);
+                errorMessage = json.error || errorMessage;
+            } catch {
+                // Response is not JSON (e.g. HTML error page from proxy)
+                errorMessage = `Transcription failed (${response.status}): ${text.slice(0, 200)}`;
+            }
+        } catch { /* ignore body read failure */ }
+        throw new Error(errorMessage);
     }
 
     const result: WhisperResult = await response.json();
