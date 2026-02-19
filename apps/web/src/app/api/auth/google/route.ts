@@ -15,7 +15,7 @@ const SCOPES = [
 
 export async function GET(_request: NextRequest) {
     const clientId = process.env.GOOGLE_CLIENT_ID;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
     if (!clientId) {
         return NextResponse.json({ error: 'Google OAuth not configured' }, { status: 500 });
