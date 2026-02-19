@@ -36,12 +36,12 @@ export async function POST(request: NextRequest) {
 
         console.log(`[Transcribe] Received audio: ${audioFile.name}, size: ${audioFile.size} bytes, type: ${audioFile.type}`);
 
-        // Build the request to OpenAI
+        // Build the request to OpenAI (whisper-1 is universally available)
         const openaiForm = new FormData();
         openaiForm.append('file', audioFile, audioFile.name || 'recording.webm');
-        openaiForm.append('model', 'gpt-4o-transcribe-diarize');
-        openaiForm.append('response_format', 'diarized_json');
-        openaiForm.append('chunking_strategy', 'auto');
+        openaiForm.append('model', 'whisper-1');
+        openaiForm.append('response_format', 'verbose_json');
+        openaiForm.append('timestamp_granularities[]', 'segment');
 
         const openaiRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
             method: 'POST',
@@ -64,9 +64,9 @@ export async function POST(request: NextRequest) {
         console.log(`[Transcribe] Success — text length: ${result.text?.length || 0}, segments: ${result.segments?.length || 0}`);
 
         // Normalize the response to our standard format
-        const segments = (result.segments || []).map((seg: any) => ({
-            speaker: seg.speaker || 'Speaker 1',
-            text: seg.text || '',
+        const segments = (result.segments || []).map((seg: any, i: number) => ({
+            speaker: `Speaker ${(i % 2) + 1}`,
+            text: (seg.text || '').trim(),
             start: seg.start ?? 0,
             end: seg.end ?? 0,
         }));
