@@ -121,11 +121,34 @@ export default function DashboardPage() {
                 // Extract unique speakers from diarization
                 const speakers = [...new Set(result.segments.map(s => s.speaker))];
 
-                // Update meeting with transcription results
+                // Generate AI summary
+                setTranscriptionStatus('Generating summary...');
+                let aiSummary = result.text.slice(0, 500); // fallback
+                try {
+                    const summaryRes = await fetch('/api/summarize', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            text: result.text,
+                            segments: result.segments,
+                        }),
+                    });
+                    if (summaryRes.ok) {
+                        const summaryData = await summaryRes.json();
+                        aiSummary = summaryData.summary || aiSummary;
+                        console.log('AI summary generated:', aiSummary.length, 'chars');
+                    } else {
+                        console.warn('Summary generation failed, using raw text fallback');
+                    }
+                } catch (sumErr) {
+                    console.warn('Summary generation error:', sumErr);
+                }
+
+                // Update meeting with AI summary
                 const { error: updateError } = await supabase
                     .from('meetings')
                     .update({
-                        summary: result.text.slice(0, 500),
+                        summary: aiSummary,
                         speakers,
                         transcript_status: 'completed',
                     })
@@ -142,7 +165,7 @@ export default function DashboardPage() {
                         meeting_id: meetingData.id,
                         raw_text: result.text,
                         cleaned_text: result.text,
-                        summary: result.text.slice(0, 500),
+                        summary: aiSummary,
                         action_items: JSON.stringify(
                             result.segments.map(s => ({
                                 speaker: s.speaker,

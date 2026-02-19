@@ -329,15 +329,80 @@
     margin-bottom: 16px;
 }
 
-.summaryText p {
+/* Markdown summary styles */
+.summaryText {
     font-size: 0.92rem;
     color: #444;
     line-height: 1.7;
+}
+
+.summaryText h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #111;
+    margin-top: 28px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.summaryText h2:first-child {
+    margin-top: 0;
+}
+
+.summaryText h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #222;
+    margin-top: 20px;
+    margin-bottom: 8px;
+}
+
+.summaryText h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+    margin-top: 16px;
+    margin-bottom: 6px;
+}
+
+.summaryText p {
     margin-bottom: 12px;
 }
 
 .summaryText p:last-child {
     margin-bottom: 0;
+}
+
+.summaryText ul,
+.summaryText ol {
+    margin: 8px 0 16px 0;
+    padding-left: 20px;
+}
+
+.summaryText li {
+    margin-bottom: 6px;
+    line-height: 1.6;
+}
+
+.summaryText li ul,
+.summaryText li ol {
+    margin: 4px 0 4px 0;
+}
+
+.summaryText strong {
+    font-weight: 600;
+    color: #222;
+}
+
+.summaryText em {
+    font-style: italic;
+}
+
+.summaryText hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 20px 0;
 }
 
 /* ---------- Transcript ---------- */

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
 import { createClient } from '@/lib/supabase/client';
 import styles from './meeting.module.css';
 
@@ -222,11 +223,8 @@ export default function MeetingPage({ params }: MeetingPageProps) {
 
             {summary ? (
                 <div className={styles.summaryContent}>
-                    <h3>Executive Summary</h3>
                     <div className={styles.summaryText}>
-                        {summary.split('\n').map((line, i) => (
-                            <p key={i}>{line}</p>
-                        ))}
+                        <ReactMarkdown>{summary}</ReactMarkdown>
                     </div>
                 </div>
             ) : (
