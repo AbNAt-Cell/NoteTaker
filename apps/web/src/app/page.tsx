@@ -167,6 +167,10 @@ export default function LandingPage() {
             <img src="/logo.svg" alt="Amebo Logo" width={24} height={24} className={styles.logoIcon} />
             <span>Amebo</span>
           </div>
+          <div style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#888', marginTop: '16px' }}>
+            <Link href="/privacy" style={{ textDecoration: 'none', color: 'inherit', transition: 'color 150ms' }} onMouseEnter={(e) => e.currentTarget.style.color = '#ccc'} onMouseLeave={(e) => e.currentTarget.style.color = '#888'}>Privacy Policy</Link>
+            <Link href="/terms" style={{ textDecoration: 'none', color: 'inherit', transition: 'color 150ms' }} onMouseEnter={(e) => e.currentTarget.style.color = '#ccc'} onMouseLeave={(e) => e.currentTarget.style.color = '#888'}>Terms of Service</Link>
+          </div>
           <p className={styles.footerText}>© 2026 Amebo. Built for brilliant teams.</p>
         </div>
       </footer>
