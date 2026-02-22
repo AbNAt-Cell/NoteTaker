@@ -45,6 +45,11 @@ export default function MeetingPage({ params }: MeetingPageProps) {
     const [newTaskText, setNewTaskText] = useState('');
     const [userEmail, setUserEmail] = useState('');
 
+    const [calendarConnected, setCalendarConnected] = useState(false);
+    const [calendarEmail, setCalendarEmail] = useState('');
+    const [calendarSyncing, setCalendarSyncing] = useState(false);
+    const [showPromo, setShowPromo] = useState(true);
+
     const router = useRouter();
     const supabase = createClient();
 
@@ -113,6 +118,41 @@ export default function MeetingPage({ params }: MeetingPageProps) {
 
         loadMeeting();
     }, [meetingId, supabase, router]);
+
+    // ── Calendar Status Check ─────────────────────────────
+    useEffect(() => {
+        const checkCalendar = async () => {
+            try {
+                const res = await fetch('/api/calendar/status');
+                if (res.ok) {
+                    const data = await res.json();
+                    setCalendarConnected(data.connected);
+                    if (data.connection?.calendar_email) {
+                        setCalendarEmail(data.connection.calendar_email);
+                    }
+                }
+            } catch (err) { }
+        };
+        checkCalendar();
+    }, []);
+
+    const handleCalendarSync = async () => {
+        setCalendarSyncing(true);
+        try {
+            await fetch('/api/calendar/sync', { method: 'POST' });
+        } catch (err) { }
+        setCalendarSyncing(false);
+    };
+
+    const handleCalendarDisconnect = async () => {
+        try {
+            const res = await fetch('/api/calendar/status', { method: 'DELETE' });
+            if (res.ok) {
+                setCalendarConnected(false);
+                setCalendarEmail('');
+            }
+        } catch (err) { }
+    };
 
     // ── Auto-save scratchpad ──────────────────────────────
     useEffect(() => {
@@ -259,12 +299,48 @@ export default function MeetingPage({ params }: MeetingPageProps) {
                     ))}
                 </div>
 
-                <div className={styles.promoCard}>
-                    <div className={styles.promoTitle}>🔓 Unlock the power of Amebo</div>
-                    <p className={styles.promoText}>
-                        Connect your Google Calendar or Outlook to unlock meeting title sync and improved speaker identification.
-                    </p>
-                    <button className={styles.promoBtn}>Connect Calendar</button>
+                {/* Sidebar footer with Promo */}
+                <div className={styles.sidebarFooter}>
+                    {showPromo && (
+                        <div className={styles.promoCard}>
+                            <div className={styles.promoHeader}>
+                                <span>{calendarConnected ? '✅ Calendar Connected' : 'Unlock the power of Amebo'}</span>
+                                <button className={styles.promoClose} onClick={() => setShowPromo(false)}>×</button>
+                            </div>
+                            {calendarConnected ? (
+                                <>
+                                    <p>Connected as {calendarEmail || 'Google Calendar'}</p>
+                                    <div style={{ display: 'flex', gap: 8 }}>
+                                        <button
+                                            className={styles.promoBtn}
+                                            onClick={handleCalendarSync}
+                                            disabled={calendarSyncing}
+                                            style={{ flex: 1 }}
+                                        >
+                                            {calendarSyncing ? 'Syncing...' : '🔄 Sync Now'}
+                                        </button>
+                                        <button
+                                            className={styles.promoBtn}
+                                            onClick={handleCalendarDisconnect}
+                                            style={{ flex: 1, color: '#ef4444' }}
+                                        >
+                                            Disconnect
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <p>Connect your Google Calendar or Outlook to unlock meeting title sync and improved speaker identification.</p>
+                                    <button
+                                        className={styles.promoBtn}
+                                        onClick={() => window.location.href = '/api/auth/google'}
+                                    >
+                                        Connect Calendar
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className={styles.sidebarFooter}>

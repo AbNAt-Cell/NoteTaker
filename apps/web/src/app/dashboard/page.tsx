@@ -364,15 +364,27 @@ export default function DashboardPage() {
                         </div>
 
                         <div className={styles.gsSteps}>
-                            <div className={styles.gsStep}>
-                                <div className={styles.gsStepCheck}></div>
+                            <div
+                                className={`${styles.gsStep} ${calendarConnected ? styles.gsStepCompleted : ''}`}
+                                onClick={() => { if (!calendarConnected) window.location.href = '/api/auth/google'; }}
+                                style={{ cursor: calendarConnected ? 'default' : 'pointer' }}
+                            >
+                                <div className={styles.gsStepCheck}>
+                                    {calendarConnected && (
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                    )}
+                                </div>
                                 <div className={styles.gsStepInfo}>
                                     <h3>Connect your calendar</h3>
-                                    <p>Sync Google or Outlook so Amebo can join your upcoming meetings.</p>
+                                    <p>{calendarConnected ? `Connected as ${calendarEmail || 'Google Calendar'}` : 'Sync Google or Outlook so Amebo can join your upcoming meetings.'}</p>
                                 </div>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.gsStepArrow}>
-                                    <polyline points="9 18 15 12 9 6" />
-                                </svg>
+                                {!calendarConnected && (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.gsStepArrow}>
+                                        <polyline points="9 18 15 12 9 6" />
+                                    </svg>
+                                )}
                             </div>
                             <div className={`${styles.gsStep} ${styles.gsStepCompleted}`}>
                                 <div className={styles.gsStepCheck}>
