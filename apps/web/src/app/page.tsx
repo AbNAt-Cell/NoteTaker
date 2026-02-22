@@ -64,7 +64,7 @@ export default function LandingPage() {
         <div className={styles.navInner}>
           <Link href="/" className={styles.logo}>
             <img src="/logo.svg" alt="Amebo Logo" width={32} height={32} className={styles.logoIcon} />
-            <span className={styles.logoText}>Amebo</span>
+            <span className={styles.logoText} style={{ color: 'white' }}>Amebo</span>
           </Link>
           <div className={styles.navLinks}>
             <Link href="/login" className="btn-secondary" style={{ padding: '10px 22px' }}>
@@ -87,7 +87,7 @@ export default function LandingPage() {
           <h1 className={styles.heroTitle}>
             Note-taking at the
             <br />
-            <span className="gradient-text">speed of thought with Amebo.</span>
+            <span className="gradient-text">speed of thought with</span> Amebo.
           </h1>
           <p className={styles.heroSubtitle}>
             Your second brain, powered by advanced AI. Auto-summarize meetings, organize thoughts semantically, and never lose a great idea again.
