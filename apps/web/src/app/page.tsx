@@ -63,7 +63,7 @@ export default function LandingPage() {
       <nav className={styles.nav}>
         <div className={styles.navInner}>
           <Link href="/" className={styles.logo}>
-            <span className={styles.logoIcon}>⚡</span>
+            <img src="/logo.svg" alt="Amebo Logo" width={32} height={32} className={styles.logoIcon} />
             <span className={styles.logoText}>Amebo</span>
           </Link>
           <div className={styles.navLinks}>
@@ -165,7 +165,7 @@ export default function LandingPage() {
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
-            <span className={styles.logoIcon}>⚡</span>
+            <img src="/logo.svg" alt="Amebo Logo" width={24} height={24} className={styles.logoIcon} />
             <span>Amebo</span>
           </div>
           <p className={styles.footerText}>© 2026 Amebo. Built for brilliant teams.</p>

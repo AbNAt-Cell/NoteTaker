@@ -231,7 +231,7 @@ export default function MeetingPage({ params }: MeetingPageProps) {
                 </div>
 
                 <Link href="/dashboard" className={styles.startBtn}>
-                    ⚡ Start Amebo
+                    <img src="/logo.svg" alt="Amebo Logo" width={16} height={16} /> Start Amebo
                 </Link>
 
                 <nav className={styles.sidebarNav}>

@@ -216,7 +216,7 @@ export default function RecordingWidget({
                     </select>
 
                     <button className={styles.startBtn} onClick={startRecording}>
-                        ⚡ Start Amebo
+                        <img src="/logo.svg" alt="Amebo Logo" width={16} height={16} /> Start Amebo
                     </button>
 
                     <label className={styles.dontShowLabel}>

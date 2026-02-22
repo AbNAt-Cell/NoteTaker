@@ -48,7 +48,7 @@ export default function RegisterPage() {
         <div className={styles.authPage}>
             <div className={styles.authCard}>
                 <div className={styles.authLogo}>
-                    <span>⚡</span>
+                    <img src="/logo.svg" alt="Amebo Logo" width={32} height={32} />
                     <span className={styles.logoGradient}>Amebo</span>
                 </div>
                 <h1 className={styles.authTitle}>Create your account</h1>

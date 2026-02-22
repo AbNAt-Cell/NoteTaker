@@ -549,7 +549,7 @@ export default function DashboardPage() {
                     </div>
                 ) : dateGroups.length === 0 ? (
                     <div className={styles.emptyState}>
-                        <div className={styles.emptyIcon}>⚡</div>
+                        <img src="/logo.svg" alt="Amebo Logo" width={48} height={48} className={styles.emptyIcon} />
                         <h2>No meetings yet</h2>
                         <p>Start your first meeting to capture notes and insights</p>
                         <button className="btn-primary" onClick={handleStartRecording}>
