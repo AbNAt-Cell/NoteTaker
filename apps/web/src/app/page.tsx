@@ -85,13 +85,12 @@ export default function LandingPage() {
             AI-Powered Meeting Intelligence
           </div>
           <h1 className={styles.heroTitle}>
-            Your meetings,
+            Note-taking at the
             <br />
-            <span className="gradient-text">supercharged with AI</span>
+            <span className="gradient-text">speed of thought with Amebo.</span>
           </h1>
           <p className={styles.heroSubtitle}>
-            Capture meetings, generate transcripts, and let AI extract insights —
-            all in one beautiful platform built for modern teams.
+            Your second brain, powered by advanced AI. Auto-summarize meetings, organize thoughts semantically, and never lose a great idea again.
           </p>
           <div className={styles.heroCta}>
             <Link href="/register" className="btn-primary" style={{ padding: '16px 36px', fontSize: '1.05rem' }}>
