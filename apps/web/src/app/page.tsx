@@ -145,6 +145,33 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Limits / Second Brain Section */}
+      <section className={styles.limitsSection}>
+        <div className={styles.limitsContainer}>
+          <div className={styles.limitsContent}>
+            <h2 className={styles.limitsTitle}>
+              Your memory<br />
+              has limits.<br />
+              Amebo doesn&apos;t.
+            </h2>
+            <p className={styles.limitsBody}>
+              Don&apos;t let brilliant ideas die in an unorganized notepad. Amebo acts as your digital second brain, using advanced AI to semantically organize every meeting, brainstorm, and interview. If it was said, it&apos;s saved, and searchable.
+            </p>
+            <Link href="/register" className={styles.limitsCta}>
+              Get started for free
+            </Link>
+          </div>
+          <div className={styles.limitsImageWrapper}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/amebo-second-brain.png"
+              alt="Amebo Digital Second Brain"
+              className={styles.limitsImage}
+            />
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className={styles.cta}>
         <div className={`${styles.ctaCard} glass`}>

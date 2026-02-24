@@ -315,3 +315,129 @@
     gap: 12px;
   }
 }
+
+/* ---------- Limits Section ---------- */
+.limitsSection {
+  position: relative;
+  z-index: 1;
+  padding: 0 24px 120px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.limitsContainer {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  padding: 60px 80px;
+  gap: 60px;
+  color: #000000;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+
+.limitsContent {
+  flex: 1;
+  max-width: 500px;
+  z-index: 2;
+  animation: fadeInLeft 0.8s ease-out;
+}
+
+.limitsTitle {
+  font-size: clamp(3rem, 5vw, 4.5rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin-bottom: 24px;
+  color: #000000;
+}
+
+.limitsBody {
+  font-size: 1.15rem;
+  color: #333333;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  font-weight: 400;
+}
+
+.limitsCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #111111;
+  color: #ffffff;
+  padding: 16px 32px;
+  border-radius: 100px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.limitsCta:hover {
+  background: #333333;
+  transform: translateY(-2px);
+}
+
+.limitsImageWrapper {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  position: absolute;
+  right: -5%;
+  bottom: -5%;
+  width: 55%;
+  animation: fadeInRight 0.8s ease-out;
+}
+
+.limitsImage {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: bottom right;
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 900px) {
+  .limitsContainer {
+    flex-direction: column;
+    padding: 40px 32px;
+  }
+
+  .limitsContent {
+    max-width: 100%;
+    margin-bottom: 40px;
+  }
+
+  .limitsImageWrapper {
+    position: relative;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    justify-content: center;
+  }
+}
