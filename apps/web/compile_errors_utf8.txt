@@ -1,0 +1,2 @@
+﻿src/app/api/ai/chat/route.ts(2,30): error TS2307: Cannot find module '@ai-sdk/openai' or its corresponding type declarations.
+src/app/api/ai/chat/route.ts(3,33): error TS2307: Cannot find module '@ai-sdk/anthropic' or its corresponding type declarations.
