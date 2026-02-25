@@ -8,6 +8,10 @@ import RecordingWidget from './RecordingWidget';
 import AskAI from './AskAI';
 import MicDetector from './MicDetector';
 import { transcribeAudio, WhisperResult } from '@/lib/services/whisper';
+import { MeetingList } from "@/components/meetings/meeting-list";
+import { useMeetingsStore } from "@/stores/meetings-store";
+import { JoinModal } from "@/components/join/join-modal";
+import { useJoinModalStore } from "@/stores/join-modal-store";
 import styles from './dashboard.module.css';
 
 interface MeetingItem {
@@ -43,6 +47,14 @@ export default function DashboardPage() {
     const [showPromo, setShowPromo] = useState(true);
     const router = useRouter();
     const supabase = createClient();
+
+    // Vexa integration
+    const { meetings: vexaMeetings, isLoadingMeetings: isLoadingVexaMeetings, fetchMeetings: fetchVexaMeetings, error: vexaError } = useMeetingsStore();
+    const openJoinModal = useJoinModalStore((state) => state.openModal);
+
+    useEffect(() => {
+        fetchVexaMeetings();
+    }, [fetchVexaMeetings]);
 
     const loadMeetings = useCallback(async () => {
         const { data: { user } } = await supabase.auth.getUser();
@@ -554,68 +566,18 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Meeting list */}
-                {loading ? (
-                    <div className={styles.loadingState}>
-                        <div className={styles.spinner} />
-                        <p>Loading your meetings...</p>
-                    </div>
-                ) : dateGroups.length === 0 ? (
-                    <div className={styles.emptyState}>
-                        <img src="/logo.svg" alt="Amebo Logo" width={48} height={48} className={styles.emptyIcon} />
-                        <h2>No meetings yet</h2>
-                        <p>Start your first meeting to capture notes and insights</p>
-                        <button className="btn-primary" onClick={handleStartRecording}>
-                            Start Your First Meeting
-                        </button>
-                    </div>
-                ) : (
-                    <div className={styles.meetingList}>
-                        {dateGroups.map(group => (
-                            <div key={group.label} className={styles.dateGroup}>
-                                <div className={styles.dateLabel}>{group.label}</div>
-                                <div className={styles.dateCards}>
-                                    {group.meetings.map(meeting => (
-                                        <Link
-                                            key={meeting.id}
-                                            href={`/meetings/${meeting.id}`}
-                                            className={styles.meetingCard}
-                                        >
-                                            <div className={styles.meetingContent}>
-                                                <h3 className={styles.meetingTitle}>{meeting.title || 'Untitled Meeting'}</h3>
-                                                <span className={styles.meetingTime}>{formatTime(meeting.scheduled_at)}</span>
-                                                {meeting.summary && (
-                                                    <p className={styles.meetingSummary}>{meeting.summary}</p>
-                                                )}
-                                                {meeting.speakers.length > 0 && (
-                                                    <p className={styles.meetingSpeakers}>{formatSpeakers(meeting.speakers)}</p>
-                                                )}
-                                            </div>
-                                            <div className={styles.meetingActions}>
-                                                <button
-                                                    className={styles.moreBtn}
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        setOpenMenuId(openMenuId === meeting.id ? null : meeting.id);
-                                                    }}
-                                                >
-                                                    ⋯
-                                                </button>
-                                                {openMenuId === meeting.id && (
-                                                    <div className={styles.contextMenu}>
-                                                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteMeeting(meeting.id); }}>
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
+                {vexaError && (
+                    <div className={styles.emptyState} style={{ color: 'red' }}>
+                        Failed to load meetings
                     </div>
                 )}
+                <div style={{ padding: '0 20px' }}>
+                    <MeetingList
+                        meetings={vexaMeetings}
+                        isLoading={isLoadingVexaMeetings}
+                        emptyMessage="No meetings yet. Join your first meeting to get started!"
+                    />
+                </div>
             </div>
         );
     };
@@ -636,16 +598,30 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                <button
-                    className={styles.startBtn}
-                    onClick={handleStartRecording}
-                    disabled={creatingMeeting || showRecorder}
-                >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                    </svg>
-                    {creatingMeeting ? 'Saving...' : isTranscribing ? 'Transcribing...' : 'Start Amebo'}
-                </button>
+                <div style={{ display: 'flex', gap: '8px', padding: '0 16px' }}>
+                    <button
+                        className={styles.startBtn}
+                        onClick={handleStartRecording}
+                        disabled={creatingMeeting || showRecorder}
+                        style={{ flex: 1 }}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                        {creatingMeeting ? 'Saving...' : isTranscribing ? 'Transcribing...' : 'Record'}
+                    </button>
+                    <button
+                        className={styles.startBtn}
+                        onClick={openJoinModal}
+                        style={{ flex: 1, backgroundColor: '#5059C9' }}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                            <path d="M15 10l5 5-5 5" />
+                            <path d="M4 4v7a4 4 0 004 4h12" />
+                        </svg>
+                        Join
+                    </button>
+                </div>
 
                 <nav className={styles.sidebarNav}>
                     <button
@@ -842,6 +818,8 @@ export default function DashboardPage() {
                     </div>
                 </div>
             )}
+
+            <JoinModal />
         </div>
     );
 }
