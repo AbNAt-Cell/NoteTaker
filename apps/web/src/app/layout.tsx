@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={bricolage.variable}>
+    <html lang="en" className={`dark ${bricolage.variable}`}>
       <body>{children}</body>
     </html>
   );
