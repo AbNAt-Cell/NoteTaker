@@ -671,10 +671,9 @@ async def get_user_details(
 # App events
 @app.on_event("startup")
 async def startup_event():
-    logger.info("Admin API starting up. Skipping automatic DB initialization.")
-    # The 'migrate-or-init' Makefile target is now responsible for all DB setup.
-    # await init_db()
-    pass
+    logger.info("Admin API starting up. Initializing database tables...")
+    await init_db()
+    logger.info("Database initialization complete.")
 
 # Include the admin router
 app.include_router(admin_router)
