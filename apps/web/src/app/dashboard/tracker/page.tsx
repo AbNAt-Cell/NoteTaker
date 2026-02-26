@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-    Zap,
-    Plus,
-    Trash2,
-    RotateCcw,
-    Save,
-    Loader2,
-    GripVertical,
-    AlertCircle,
+  Zap,
+  Plus,
+  Trash2,
+  RotateCcw,
+  Save,
+  Loader2,
+  GripVertical,
+  AlertCircle,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,121 +22,121 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const DECISION_LISTENER_URL =
-    process.env.NEXT_PUBLIC_DECISION_LISTENER_URL ?? "http://localhost:8765";
+  process.env.NEXT_PUBLIC_DECISION_LISTENER_URL ?? "http://localhost:8765";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 interface TrackerCategory {
-    key: string;
-    label: string;
-    description: string;
-    enabled: boolean;
+  key: string;
+  label: string;
+  description: string;
+  enabled: boolean;
 }
 
 interface TrackerConfig {
-    name: string;
-    description: string;
-    categories: TrackerCategory[];
-    extra_instructions: string;
+  name: string;
+  description: string;
+  categories: TrackerCategory[];
+  extra_instructions: string;
 }
 
 // ── Colour palette for category badges ────────────────────────────────────────
 
 const BADGE_COLORS = [
-    "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
-    "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
-    "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300",
-    "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
-    "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300",
-    "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300",
+  "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
+  "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
+  "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300",
+  "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
+  "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300",
+  "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300",
 ];
 
 // ── Category row ──────────────────────────────────────────────────────────────
 
 function CategoryRow({
-    cat,
-    index,
-    colorClass,
-    onChange,
-    onRemove,
+  cat,
+  index,
+  colorClass,
+  onChange,
+  onRemove,
 }: {
-    cat: TrackerCategory;
-    index: number;
-    colorClass: string;
-    onChange: (updated: TrackerCategory) => void;
-    onRemove: () => void;
+  cat: TrackerCategory;
+  index: number;
+  colorClass: string;
+  onChange: (updated: TrackerCategory) => void;
+  onRemove: () => void;
 }) {
-    return (
-        <div className="rounded-lg border bg-card p-4 space-y-3">
-            <div className="flex items-center gap-3">
-                <GripVertical className="h-4 w-4 text-muted-foreground shrink-0 cursor-grab" />
+  return (
+    <div className="rounded-lg border bg-card p-4 space-y-3">
+      <div className="flex items-center gap-3">
+        <GripVertical className="h-4 w-4 text-muted-foreground shrink-0 cursor-grab" />
 
-                <span className={cn("inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0", colorClass)}>
-                    {cat.label || `Category ${index + 1}`}
-                </span>
+        <span className={cn("inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0", colorClass)}>
+          {cat.label || `Category ${index + 1}`}
+        </span>
 
-                <div className="flex-1 min-w-0">
-                    <Input
-                        value={cat.key}
-                        onChange={(e) => onChange({ ...cat, key: e.target.value.toLowerCase().replace(/\s+/g, "_") })}
-                        placeholder="key_name"
-                        className="h-7 text-xs font-mono"
-                    />
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                        variant={cat.enabled ? "default" : "outline"}
-                        size="sm"
-                        className="h-6 px-2 text-[10px]"
-                        onClick={() => onChange({ ...cat, enabled: !cat.enabled })}
-                    >
-                        {cat.enabled ? "On" : "Off"}
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive hover:text-destructive"
-                        onClick={onRemove}
-                    >
-                        <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                </div>
-            </div>
-
-            <div className="space-y-2 pl-7">
-                <Input
-                    value={cat.label}
-                    onChange={(e) => onChange({ ...cat, label: e.target.value })}
-                    placeholder="Display label (e.g. Decision)"
-                    className="h-8 text-sm"
-                />
-                <Textarea
-                    value={cat.description}
-                    onChange={(e) => onChange({ ...cat, description: e.target.value })}
-                    placeholder={\`Describe when to capture a "\${cat.key}" (used in the LLM prompt)\`}
-                className="min-h-[60px] text-sm resize-none"
-                rows={2}
-        />
-            </div>
+        <div className="flex-1 min-w-0">
+          <Input
+            value={cat.key}
+            onChange={(e) => onChange({ ...cat, key: e.target.value.toLowerCase().replace(/\s+/g, "_") })}
+            placeholder="key_name"
+            className="h-7 text-xs font-mono"
+          />
         </div>
-    );
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            variant={cat.enabled ? "default" : "outline"}
+            size="sm"
+            className="h-6 px-2 text-[10px]"
+            onClick={() => onChange({ ...cat, enabled: !cat.enabled })}
+          >
+            {cat.enabled ? "On" : "Off"}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-destructive hover:text-destructive"
+            onClick={onRemove}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="space-y-2 pl-7">
+        <Input
+          value={cat.label}
+          onChange={(e) => onChange({ ...cat, label: e.target.value })}
+          placeholder="Display label (e.g. Decision)"
+          className="h-8 text-sm"
+        />
+        <Textarea
+          value={cat.description}
+          onChange={(e) => onChange({ ...cat, description: e.target.value })}
+          placeholder={`Describe when to capture a "${cat.key}" (used in the LLM prompt)`}
+          className="min-h-[60px] text-sm resize-none"
+          rows={2}
+        />
+      </div>
+    </div>
+  );
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function TrackerPage() {
-    const [config, setConfig] = useState<TrackerConfig | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isResetting, setIsResetting] = useState(false);
-    const [listenerStatus, setListenerStatus] = useState<"unknown" | "online" | "offline">("unknown");
+  const [config, setConfig] = useState<TrackerConfig | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [listenerStatus, setListenerStatus] = useState<"unknown" | "online" | "offline">("unknown");
 
-    // ── Fetch current config from listener ──────────────────────────────────────
+  // ── Fetch current config from listener ──────────────────────────────────────
 
-    const fetchConfig = useCallback(async () => {
-        try {
-            const res = await fetch(\`\${DECISION_LISTENER_URL}/config\`);
+  const fetchConfig = useCallback(async () => {
+    try {
+      const res = await fetch(`${DECISION_LISTENER_URL}/config`);
       if (!res.ok) throw new Error("fetch failed");
       const data: TrackerConfig = await res.json();
       setConfig(data);
@@ -158,7 +158,7 @@ export default function TrackerPage() {
     if (!config) return;
     setIsSaving(true);
     try {
-      const res = await fetch(\`\${DECISION_LISTENER_URL}/config\`, {
+      const res = await fetch(DECISION_LISTENER_URL + "/config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(config),
@@ -179,7 +179,7 @@ export default function TrackerPage() {
   const handleReset = async () => {
     setIsResetting(true);
     try {
-      const res = await fetch(\`\${DECISION_LISTENER_URL}/config/reset\`, { method: "POST" });
+      const res = await fetch(DECISION_LISTENER_URL + "/config/reset", { method: "POST" });
       if (!res.ok) throw new Error(await res.text());
       const defaults: TrackerConfig = await res.json();
       setConfig(defaults);
@@ -209,8 +209,8 @@ export default function TrackerPage() {
   const addCategory = () => {
     if (!config) return;
     const newCat: TrackerCategory = {
-      key: \`category_\${config.categories.length + 1}\`,
-      label: \`Category \${config.categories.length + 1}\`,
+      key: `category_${config.categories.length + 1}`,
+      label: `Category ${config.categories.length + 1}`,
       description: "Describe what to capture",
       enabled: true,
     };
@@ -249,8 +249,8 @@ export default function TrackerPage() {
               listenerStatus === "online"
                 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                 : listenerStatus === "offline"
-                ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                : "bg-muted text-muted-foreground"
+                  ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                  : "bg-muted text-muted-foreground"
             )}
           >
             <span className={cn(
@@ -401,14 +401,14 @@ function buildPreviewPrompt(cfg: TrackerConfig): string {
     "Your job: detect exactly ONE of the following, if present:",
   ];
   for (const cat of enabled) {
-    lines.push(\`- **\${cat.key}**: \${cat.description}\`);
+    lines.push(`- ** ${cat.key} **: ${cat.description}`);
   }
   lines.push("- **no_match**: nothing significant to capture right now");
   lines.push("");
   lines.push("Rules:");
   for (const rule of cfg.extra_instructions.split(". ")) {
     const r = rule.trim();
-    if (r) lines.push(\`- \${r}.\`);
+    if (r) lines.push(`- ${r}.`);
   }
   lines.push("- Always call capture_meeting_item — even for no_match.");
   return lines.join("\\n");
