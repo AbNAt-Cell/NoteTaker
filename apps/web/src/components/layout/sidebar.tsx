@@ -16,8 +16,8 @@ import {
   LogOut,
   Lock,
   Bot,
-  BookOpen,
   Zap,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -31,15 +31,15 @@ interface SidebarProps {
 }
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Meetings", href: "/meetings", icon: Video },
-  { name: "Tracker", href: "/tracker", icon: Zap },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Meetings", href: "/dashboard/meetings", icon: Video },
+  { name: "Tracker", href: "/dashboard/tracker", icon: Zap },
 ];
 
 const adminNavigation = [
-  { name: "Users", href: "/admin/users", icon: Users },
-  { name: "Bots", href: "/admin/bots", icon: Bot },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Users", href: "/dashboard/admin/users", icon: Users },
+  { name: "Bots", href: "/dashboard/admin/bots", icon: Bot },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
