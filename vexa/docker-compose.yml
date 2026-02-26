@@ -4,6 +4,9 @@ services:
     build:
       context: .
       dockerfile: services/api-gateway/Dockerfile
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     ports:
       - "${API_GATEWAY_HOST_PORT:-8056}:8000"
     environment:
@@ -34,6 +37,9 @@ services:
     build:
       context: .
       dockerfile: services/admin-api/Dockerfile
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     ports:
       - "${ADMIN_API_HOST_PORT:-8057}:8001"
     environment:
@@ -54,6 +60,9 @@ services:
     build:
       context: .
       dockerfile: services/bot-manager/Dockerfile
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     environment:
       - REDIS_URL=redis://redis:6379/0
       - BOT_IMAGE_NAME=${BOT_IMAGE_NAME:-vexa-bot:dev}
@@ -272,6 +281,9 @@ services:
     build:
       context: .
       dockerfile: services/transcription-collector/Dockerfile
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     ports:
       - "${TRANSCRIPTION_COLLECTOR_HOST_PORT:-8123}:8000"
     volumes:
