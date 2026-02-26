@@ -3,7 +3,8 @@
    ============================================================ */
 
 @import "tailwindcss";
-@source "../components";
+@source "../../src/components";
+@source "../../src/lib";
 
 @custom-variant dark (&:is(.dark *));
 
