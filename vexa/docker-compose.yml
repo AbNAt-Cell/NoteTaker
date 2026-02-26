@@ -68,7 +68,7 @@ services:
       - DB_SSL_MODE=${DB_SSL_MODE:-disable}
       - DOCKER_HOST=unix://var/run/docker.sock
       - DEVICE_TYPE=${DEVICE_TYPE}
-      - WHISPER_LIVE_URL=ws://whisperlive-remote:9090/ws  # Direct connection to whisperlive-remote
+      - WHISPER_LIVE_URL=ws://whisperlive-remote:9090/ws # Direct connection to whisperlive-remote
       - ADMIN_TOKEN=${ADMIN_API_TOKEN}
       - ZOOM_CLIENT_ID=${ZOOM_CLIENT_ID}
       - ZOOM_CLIENT_SECRET=${ZOOM_CLIENT_SECRET}
@@ -106,7 +106,7 @@ services:
     restart: unless-stopped
 
   whisperlive:
-    profiles: ["gpu"]
+    profiles: [ "gpu" ]
     build:
       context: .
       dockerfile: services/WhisperLive/Dockerfile.project
@@ -146,16 +146,7 @@ services:
       - CONSUL_ENABLE=false
       - WL_REDIS_DISCOVERY_ENABLED=false
     command: >-
-      --port 9090
-      --backend faster_whisper
-      --faster_whisper_custom_model_path ${WHISPER_MODEL_SIZE}
-      --min_audio_s ${MIN_AUDIO_S:-2.0}
-      --wl_recording_dir ${WL_RECORDING_DIR:-/var/lib/wl-recordings}
-      --wl_recording_flush_seconds ${WL_RECORDING_FLUSH_SECONDS:-3}
-      --wl_recording_fsync_seconds ${WL_RECORDING_FSYNC_SECONDS:-10}
-      --wl_recording_rotate_seconds ${WL_RECORDING_ROTATE_SECONDS:-20}
-      --wl_recording_rotate_bytes ${WL_RECORDING_ROTATE_BYTES:-16777216}
-      --wl_recording_snapshot_seconds ${WL_RECORDING_SNAPSHOT_SECONDS:-20}
+      --port 9090 --backend faster_whisper --faster_whisper_custom_model_path ${WHISPER_MODEL_SIZE} --min_audio_s ${MIN_AUDIO_S:-2.0} --wl_recording_dir ${WL_RECORDING_DIR:-/var/lib/wl-recordings} --wl_recording_flush_seconds ${WL_RECORDING_FLUSH_SECONDS:-3} --wl_recording_fsync_seconds ${WL_RECORDING_FSYNC_SECONDS:-10} --wl_recording_rotate_seconds ${WL_RECORDING_ROTATE_SECONDS:-20} --wl_recording_rotate_bytes ${WL_RECORDING_ROTATE_BYTES:-16777216} --wl_recording_snapshot_seconds ${WL_RECORDING_SNAPSHOT_SECONDS:-20}
     expose:
       - "9090" #use for transcription web socket
       - "9091" #use for health check
@@ -165,8 +156,8 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ["3"] # Ensure this is configurable or correct for your setup
-              capabilities: [gpu]
+              device_ids: [ "3" ] # Ensure this is configurable or correct for your setup
+              capabilities: [ gpu ]
     init: true
     depends_on:
       transcription-collector:
@@ -175,7 +166,7 @@ services:
       - vexa_default
   # CPU version of WhisperLive for users without GPU
   whisperlive-cpu:
-    profiles: ["cpu"]
+    profiles: [ "cpu" ]
     build:
       context: .
       dockerfile: services/WhisperLive/Dockerfile.cpu
@@ -208,16 +199,7 @@ services:
     deploy:
       replicas: 1
     command: >-
-      --port 9090
-      --backend faster_whisper
-      --faster_whisper_custom_model_path ${WHISPER_MODEL_SIZE}
-      --min_audio_s ${MIN_AUDIO_S:-2.0}
-      --wl_recording_dir ${WL_RECORDING_DIR:-/var/lib/wl-recordings}
-      --wl_recording_flush_seconds ${WL_RECORDING_FLUSH_SECONDS:-3}
-      --wl_recording_fsync_seconds ${WL_RECORDING_FSYNC_SECONDS:-10}
-      --wl_recording_rotate_seconds ${WL_RECORDING_ROTATE_SECONDS:-20}
-      --wl_recording_rotate_bytes ${WL_RECORDING_ROTATE_BYTES:-16777216}
-      --wl_recording_snapshot_seconds ${WL_RECORDING_SNAPSHOT_SECONDS:-20}
+      --port 9090 --backend faster_whisper --faster_whisper_custom_model_path ${WHISPER_MODEL_SIZE} --min_audio_s ${MIN_AUDIO_S:-2.0} --wl_recording_dir ${WL_RECORDING_DIR:-/var/lib/wl-recordings} --wl_recording_flush_seconds ${WL_RECORDING_FLUSH_SECONDS:-3} --wl_recording_fsync_seconds ${WL_RECORDING_FSYNC_SECONDS:-10} --wl_recording_rotate_seconds ${WL_RECORDING_ROTATE_SECONDS:-20} --wl_recording_rotate_bytes ${WL_RECORDING_ROTATE_BYTES:-16777216} --wl_recording_snapshot_seconds ${WL_RECORDING_SNAPSHOT_SECONDS:-20}
     expose:
       - "9090" #use for transcription web socket
       - "9091" #use for health check
@@ -232,7 +214,7 @@ services:
 
   # Remote API version of WhisperLive
   whisperlive-remote:
-    profiles: ["remote"]
+    profiles: [ "remote" ]
     build:
       context: .
       dockerfile: services/WhisperLive/Dockerfile.cpu
@@ -268,24 +250,12 @@ services:
       - DEVICE_TYPE=remote
       - REMOTE_TRANSCRIBER_URL=${REMOTE_TRANSCRIBER_URL}
       - REMOTE_TRANSCRIBER_API_KEY=${REMOTE_TRANSCRIBER_API_KEY}
+      - DEEPGRAM_API_KEY=${DEEPGRAM_API_KEY}
       - CONSUL_ENABLE=false
     deploy:
       replicas: 1
     command: >-
-      --port 9090
-      --backend remote
-      --min_audio_s ${MIN_AUDIO_S:-2.0}
-      --min_audio_s_tier2 ${MIN_AUDIO_S_TIER2:-20.0}
-      --min_time_between_requests_s ${MIN_TIME_BETWEEN_REQUESTS_S:-0.5}
-      --min_time_between_requests_s_tier2 ${MIN_TIME_BETWEEN_REQUESTS_S_TIER2:-20.0}
-      --wl_recording_dir ${WL_RECORDING_DIR:-/var/lib/wl-recordings}
-      --wl_recording_flush_seconds ${WL_RECORDING_FLUSH_SECONDS:-3}
-      --wl_recording_fsync_seconds ${WL_RECORDING_FSYNC_SECONDS:-10}
-      --wl_recording_rotate_seconds ${WL_RECORDING_ROTATE_SECONDS:-20}
-      --wl_recording_rotate_bytes ${WL_RECORDING_ROTATE_BYTES:-16777216}
-      --wl_recording_snapshot_seconds ${WL_RECORDING_SNAPSHOT_SECONDS:-20}
-      --same_output_threshold ${SAME_OUTPUT_THRESHOLD:-3}
-      --same_output_threshold_tier2 ${SAME_OUTPUT_THRESHOLD_TIER2:-2}
+      --port 9090 --backend deepgram --min_audio_s ${MIN_AUDIO_S:-2.0} --min_audio_s_tier2 ${MIN_AUDIO_S_TIER2:-20.0} --min_time_between_requests_s ${MIN_TIME_BETWEEN_REQUESTS_S:-0.5} --min_time_between_requests_s_tier2 ${MIN_TIME_BETWEEN_REQUESTS_S_TIER2:-20.0} --wl_recording_dir ${WL_RECORDING_DIR:-/var/lib/wl-recordings} --wl_recording_flush_seconds ${WL_RECORDING_FLUSH_SECONDS:-3} --wl_recording_fsync_seconds ${WL_RECORDING_FSYNC_SECONDS:-10} --wl_recording_rotate_seconds ${WL_RECORDING_ROTATE_SECONDS:-20} --wl_recording_rotate_bytes ${WL_RECORDING_ROTATE_BYTES:-16777216} --wl_recording_snapshot_seconds ${WL_RECORDING_SNAPSHOT_SECONDS:-20} --same_output_threshold ${SAME_OUTPUT_THRESHOLD:-3} --same_output_threshold_tier2 ${SAME_OUTPUT_THRESHOLD_TIER2:-2}
     expose:
       - "9090" #use for transcription web socket
       - "9091" #use for health check
@@ -381,8 +351,7 @@ services:
 
   redis:
     image: redis:7.0-alpine
-    command:
-      ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec"]
+    command: [ "redis-server", "--appendonly", "yes", "--appendfsync", "everysec" ]
     volumes:
       - redis-data:/data
     networks:
@@ -440,6 +409,7 @@ volumes:
   minio-data:
   recordings-data:
   wl-recordings:
+
 
 networks:
   vexa_default:
