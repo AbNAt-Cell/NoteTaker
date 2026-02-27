@@ -15,14 +15,25 @@ export const metadata: Metadata = {
   },
 };
 
+import { ThemeProvider } from '@/components/theme-provider';
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`dark ${bricolage.variable}`}>
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning className={`dark ${bricolage.variable}`}>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

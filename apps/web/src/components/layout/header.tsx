@@ -109,7 +109,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-semibold group">
           <Logo size="md" showText={false} className="group-hover:scale-105 transition-transform" />
-          <span className="hidden sm:inline-block">Vexa Dashboard</span>
+          <span className="hidden sm:inline-block">Amebo Dashboard</span>
         </Link>
 
         {/* Spacer */}
@@ -117,106 +117,12 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "transition-colors",
-                  docsModeEnabled 
-                    ? "bg-primary/10 text-primary hover:bg-primary/20" 
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Code2 className="h-5 w-5" />
-                <span className="sr-only">API Docs Mode</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent side="bottom" align="end" className="w-80 p-4">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className={cn(
-                      "rounded-md p-1.5",
-                      docsModeEnabled ? "bg-primary/10" : "bg-muted"
-                    )}>
-                      <Code className={cn(
-                        "h-4 w-4",
-                        docsModeEnabled ? "text-primary" : "text-muted-foreground"
-                      )} />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-sm text-foreground">API Docs Mode</h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {docsModeEnabled ? "Enabled" : "Disabled"}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    When enabled, contextual API documentation badges appear throughout the UI, showing you how to perform the same actions using the Vexa API.
-                  </p>
-                </div>
-                
-                <div className="space-y-2.5 rounded-lg border bg-muted/50 p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Visual indicator:</p>
-                  <div className="flex items-center gap-2">
-                    <div className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-muted border border-border shrink-0">
-                      <Code2 className="h-3.5 w-3.5 text-muted-foreground" />
-                    </div>
-                    <p className="text-xs text-muted-foreground flex-1">
-                      Look for these badges next to UI actions
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 pt-2 border-t">
-                  <Button
-                    variant={docsModeEnabled ? "outline" : "default"}
-                    size="sm"
-                    onClick={toggleDocsMode}
-                    className="flex-1 text-xs"
-                  >
-                    {docsModeEnabled ? "Disable" : "Enable"} Mode
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs"
-                    asChild
-                  >
-                    <a href={getDocsUrl("/docs")} target="_blank" rel="noopener noreferrer">
-                      <BookOpen className="h-3.5 w-3.5 mr-1.5" />
-                      Docs
-                    </a>
-                  </Button>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          <Separator orientation="vertical" className="mx-1 h-6" />
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" asChild className="text-muted-foreground">
-                <Link href="/docs">
-                  <BookOpen className="h-5 w-5" />
-                  <span className="sr-only">Full Documentation</span>
-                </Link>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Full API Documentation</p>
-            </TooltipContent>
-          </Tooltip>
-
           <ThemeToggle />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
+                <User className="h-5 w-5" fill="white" />
                 <span className="sr-only">User menu</span>
               </Button>
             </DropdownMenuTrigger>
@@ -231,7 +137,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </>
               )}
               <DropdownMenuItem asChild>
-                <Link href="/settings">
+                <Link href="/dashboard/settings">
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </Link>
