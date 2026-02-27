@@ -146,4 +146,5 @@ test_data/
 *.mp4
 *.txt
 !**/requirements.txt
+!**/requirements/*.txt
 manifest.csv
