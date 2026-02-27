@@ -19,9 +19,10 @@ export async function GET() {
     wsUrl = wsUrl.endsWith('/ws') ? wsUrl : `${wsUrl.replace(/\/$/, '')}/ws`;
   }
 
-  // Get user's auth token from cookie for WebSocket authentication
+  // Get user's auth token for WebSocket authentication
+  // Priority: vexa-token cookie > VEXA_API_KEY env var
   const cookieStore = await cookies();
-  const authToken = cookieStore.get("vexa-token")?.value;
+  const authToken = cookieStore.get("vexa-token")?.value || process.env.VEXA_API_KEY;
 
   // Get default bot name from environment (optional)
   const defaultBotName = process.env.DEFAULT_BOT_NAME || null;
