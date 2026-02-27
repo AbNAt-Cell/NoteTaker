@@ -57,11 +57,11 @@ function parseMeetingInput(input: string): { platform: Platform; meetingId: stri
     // URL decode and extract the meeting thread id
     const decodedPath = decodeURIComponent(meetingPath);
     const meetingId = decodedPath.split('/')[0] || decodedPath;
-    
+
     // Extract passcode from query parameter (p=...)
     const passcodeMatch = trimmed.match(/[?&]p=([^&]+)/i);
     const passcode = passcodeMatch ? decodeURIComponent(passcodeMatch[1]) : undefined;
-    
+
     return { platform: "teams", meetingId, passcode };
   }
 
@@ -174,9 +174,9 @@ export function JoinModal() {
     setIsSubmitting(true);
 
     const request: CreateBotRequest = {
-        platform: parsedInput.platform,
-        native_meeting_id: parsedInput.meetingId,
-      };
+      platform: parsedInput.platform,
+      native_meeting_id: parsedInput.meetingId,
+    };
 
     // Add passcode for Teams and Zoom meetings
     if ((parsedInput.platform === "teams" || parsedInput.platform === "zoom") && finalPasscode) {
@@ -184,7 +184,7 @@ export function JoinModal() {
     }
 
     // Set bot name - use custom name or configured default
-    request.bot_name = botName.trim() || config?.defaultBotName || "Vexa - Open Source Bot";
+    request.bot_name = botName.trim() || config?.defaultBotName || "Amebo";
 
     if (language && language !== "auto") {
       request.language = language;
@@ -265,7 +265,7 @@ export function JoinModal() {
                   {parsedInput.platform === "google_meet" ? (
                     <div className="h-6 w-6 rounded-md bg-green-500 flex items-center justify-center shadow-sm">
                       <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                       </svg>
                     </div>
                   ) : parsedInput.platform === "zoom" ? (
@@ -275,7 +275,7 @@ export function JoinModal() {
                   ) : (
                     <div className="h-6 w-6 rounded-md bg-[#5059C9] flex items-center justify-center shadow-sm">
                       <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19.98 7.89A2.14 2.14 0 1 0 17.84 10V7.89h2.14zm-5.27 0A2.14 2.14 0 1 0 12.58 10V7.89h2.13zM12.58 14.5h-1.11v-1.8h1.11zm4.13 0h-1.11v-1.8h1.11zM21 11.36v5.5a3 3 0 0 1-3 3h-3.86v-4.5H12.5v4.5H8.64v-4.5h-1.78a3 3 0 0 1-3-3v-5.5a3 3 0 0 1 3-3h11.14a3 3 0 0 1 3 3z"/>
+                        <path d="M19.98 7.89A2.14 2.14 0 1 0 17.84 10V7.89h2.14zm-5.27 0A2.14 2.14 0 1 0 12.58 10V7.89h2.13zM12.58 14.5h-1.11v-1.8h1.11zm4.13 0h-1.11v-1.8h1.11zM21 11.36v5.5a3 3 0 0 1-3 3h-3.86v-4.5H12.5v4.5H8.64v-4.5h-1.78a3 3 0 0 1-3-3v-5.5a3 3 0 0 1 3-3h11.14a3 3 0 0 1 3 3z" />
                       </svg>
                     </div>
                   )}
@@ -294,8 +294,8 @@ export function JoinModal() {
                       ? parsedInput?.platform === "google_meet"
                         ? "border-green-500 focus-visible:ring-green-500/20"
                         : parsedInput?.platform === "zoom"
-                        ? "border-blue-500 focus-visible:ring-blue-500/20"
-                        : "border-[#5059C9] focus-visible:ring-[#5059C9]/20"
+                          ? "border-blue-500 focus-visible:ring-blue-500/20"
+                          : "border-[#5059C9] focus-visible:ring-[#5059C9]/20"
                       : "border-orange-500 focus-visible:ring-orange-500/20"
                   )
                 )}
@@ -310,16 +310,16 @@ export function JoinModal() {
                     parsedInput?.platform === "google_meet"
                       ? "bg-green-100 dark:bg-green-950"
                       : parsedInput?.platform === "zoom"
-                      ? "bg-blue-100 dark:bg-blue-950"
-                      : "bg-indigo-100 dark:bg-indigo-950"
+                        ? "bg-blue-100 dark:bg-blue-950"
+                        : "bg-indigo-100 dark:bg-indigo-950"
                   )}>
                     <svg className={cn(
                       "h-4 w-4",
                       parsedInput?.platform === "google_meet"
                         ? "text-green-600 dark:text-green-400"
                         : parsedInput?.platform === "zoom"
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-[#5059C9]"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-[#5059C9]"
                     )} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
@@ -336,18 +336,18 @@ export function JoinModal() {
                   parsedInput.platform === "google_meet"
                     ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
                     : parsedInput.platform === "zoom"
-                    ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-                    : "bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                      ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                      : "bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
                 )}>
                   {parsedInput.platform === "google_meet" ? (
                     <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                     </svg>
                   ) : parsedInput.platform === "zoom" ? (
                     <Video className="h-3 w-3" />
                   ) : (
                     <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M19.98 7.89A2.14 2.14 0 1 0 17.84 10V7.89h2.14zm-5.27 0A2.14 2.14 0 1 0 12.58 10V7.89h2.13zM12.58 14.5h-1.11v-1.8h1.11zm4.13 0h-1.11v-1.8h1.11zM21 11.36v5.5a3 3 0 0 1-3 3h-3.86v-4.5H12.5v4.5H8.64v-4.5h-1.78a3 3 0 0 1-3-3v-5.5a3 3 0 0 1 3-3h11.14a3 3 0 0 1 3 3z"/>
+                      <path d="M19.98 7.89A2.14 2.14 0 1 0 17.84 10V7.89h2.14zm-5.27 0A2.14 2.14 0 1 0 12.58 10V7.89h2.13zM12.58 14.5h-1.11v-1.8h1.11zm4.13 0h-1.11v-1.8h1.11zM21 11.36v5.5a3 3 0 0 1-3 3h-3.86v-4.5H12.5v4.5H8.64v-4.5h-1.78a3 3 0 0 1-3-3v-5.5a3 3 0 0 1 3-3h11.14a3 3 0 0 1 3 3z" />
                     </svg>
                   )}
                   {parsedInput.platform === "google_meet" ? "Google Meet" : parsedInput.platform === "zoom" ? "Zoom" : "Microsoft Teams"}

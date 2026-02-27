@@ -56,8 +56,8 @@ export function JoinForm({ onSuccess }: JoinFormProps) {
       message: isValid
         ? "Valid meeting ID"
         : platform === "google_meet"
-        ? "Format: abc-defg-hij"
-        : "Enter a valid meeting ID",
+          ? "Format: abc-defg-hij"
+          : "Enter a valid meeting ID",
     };
   }, [meetingId, platform]);
 
@@ -92,7 +92,7 @@ export function JoinForm({ onSuccess }: JoinFormProps) {
     }
 
     // Set bot name - use custom name or configured default
-    request.bot_name = botName.trim() || config?.defaultBotName || "Vexa - Open Source Bot";
+    request.bot_name = botName.trim() || config?.defaultBotName || "Amebo";
 
     if (language && language !== "auto") {
       request.language = language;
@@ -322,8 +322,8 @@ export function JoinForm({ onSuccess }: JoinFormProps) {
               {touched.meetingId && meetingId && meetingIdValidation.message
                 ? meetingIdValidation.message
                 : platform === "google_meet"
-                ? "Enter the meeting code from the URL (e.g., abc-defg-hij)"
-                : "Enter the numeric meeting ID from your Teams invitation"}
+                  ? "Enter the meeting code from the URL (e.g., abc-defg-hij)"
+                  : "Enter the numeric meeting ID from your Teams invitation"}
             </p>
           </div>
 
