@@ -147,10 +147,9 @@ export default function MeetingsDashboardPage() {
                             const meetingData = {
                                 user_id: user.id,
                                 title: data.title || "Dashboard Recording",
-                                platform: 'web_recording',
-                                status: 'completed',
-                                start_time: new Date(Date.now() - data.duration * 1000).toISOString(),
-                                end_time: new Date().toISOString(),
+                                bot_status: 'completed',
+                                transcript_status: 'completed',
+                                scheduled_at: new Date(Date.now() - data.duration * 1000).toISOString(),
                                 duration_minutes: Math.ceil(data.duration / 60) || 1,
                                 scratchpad_notes: data.notes
                             };
