@@ -11,7 +11,17 @@ import { MCPConfigButton } from "@/components/mcp/mcp-config-button";
 import { useMeetingsStore } from "@/stores/meetings-store";
 import { useJoinModalStore } from "@/stores/join-modal-store";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
+import RecordingWidget from "./RecordingWidget";
+
 export default function DashboardPage() {
+    const [showRecordingWidget, setShowRecordingWidget] = useState(false);
+    const router = useRouter();
+    const supabase = createClient();
+
     const { meetings, isLoadingMeetings, fetchMeetings, error } = useMeetingsStore();
     const openJoinModal = useJoinModalStore((state) => state.openModal);
 
@@ -44,44 +54,14 @@ export default function DashboardPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <MCPConfigButton />
-                    <Button variant="outline" asChild>
-                        <a
-                            href="https://discord.gg/KXpwveJewr"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2"
-                        >
-                            <img
-                                src="/icons/icons8-discord-100.png"
-                                alt="Discord"
-                                width={20}
-                                height={20}
-                                className="object-contain flex-shrink-0 dark:invert"
-                            />
-                            Support
-                        </a>
-                    </Button>
-                    <Button variant="outline" asChild>
-                        <a
-                            href="https://github.com/Vexa-ai/vexa-dashboard"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2"
-                        >
-                            <img
-                                src="/icons/icons8-github-120.png"
-                                alt="GitHub"
-                                width={20}
-                                height={20}
-                                className="object-contain flex-shrink-0 dark:invert"
-                            />
-                            Fork me!
-                        </a>
-                    </Button>
+
                     <Button onClick={openJoinModal}>
                         <Plus className="mr-2 h-4 w-4" />
                         Join Meeting
+                    </Button>
+                    <Button variant="secondary" onClick={() => setShowRecordingWidget(true)}>
+                        <Video className="mr-2 h-4 w-4" />
+                        Record Meeting
                     </Button>
                 </div>
             </div>
@@ -162,6 +142,58 @@ export default function DashboardPage() {
                     )}
                 </CardContent>
             </Card>
+
+            {showRecordingWidget && (
+                <RecordingWidget
+                    onClose={() => setShowRecordingWidget(false)}
+                    onSave={async (data) => {
+                        try {
+                            const { data: { user } } = await supabase.auth.getUser();
+                            if (!user) {
+                                toast.error("Not logged in");
+                                return;
+                            }
+
+                            const meetingData = {
+                                user_id: user.id,
+                                title: data.title || "Dashboard Recording",
+                                platform: 'web_recording',
+                                status: 'completed',
+                                start_time: new Date(Date.now() - data.duration * 1000).toISOString(),
+                                end_time: new Date().toISOString(),
+                                duration_minutes: Math.ceil(data.duration / 60) || 1,
+                                scratchpad_notes: data.notes
+                            };
+
+                            const { data: newMeeting, error: meetingError } = await supabase
+                                .from('meetings')
+                                .insert(meetingData)
+                                .select()
+                                .single();
+
+                            if (meetingError) throw meetingError;
+
+                            const transcriptData = {
+                                meeting_id: newMeeting.id,
+                                user_id: user.id,
+                                transcript_data: { segments: data.transcript },
+                                status: 'completed'
+                            };
+
+                            await supabase.from('transcripts').insert(transcriptData);
+
+                            toast.success("Recording saved successfully");
+                            setShowRecordingWidget(false);
+
+                            router.push(`/dashboard/meetings/${newMeeting.id}`);
+                        } catch (error: any) {
+                            console.error("Save recording error:", error);
+                            toast.error(`Failed to save: ${error.message}`);
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 }
+

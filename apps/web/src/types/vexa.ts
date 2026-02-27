@@ -40,6 +40,7 @@ export interface MeetingData {
   name?: string;
   title?: string;
   notes?: string;
+  summary?: string;
   participants?: string[];
   languages?: string[];
   // Bot status details (may be populated by Vexa API)

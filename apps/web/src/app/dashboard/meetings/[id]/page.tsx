@@ -44,6 +44,7 @@ import { useLiveTranscripts } from "@/hooks/use-live-transcripts";
 import { PLATFORM_CONFIG, getDetailedStatus } from "@/types/vexa";
 import type { MeetingStatus, Meeting } from "@/types/vexa";
 import { StatusHistory } from "@/components/meetings/status-history";
+import { SummaryPanel } from "@/components/meetings/summary-panel";
 import { cn } from "@/lib/utils";
 import { vexaAPI } from "@/lib/api";
 import { toast } from "sonner";
@@ -951,6 +952,9 @@ export default function MeetingDetailPage() {
                                 </div>
                             </CardContent>
                         </Card>
+
+                        {/* Summary */}
+                        <SummaryPanel meeting={currentMeeting} transcripts={transcripts} />
 
                         {/* Notes */}
                         <Card>

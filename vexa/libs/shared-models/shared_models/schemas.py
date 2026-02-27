@@ -529,6 +529,7 @@ class MeetingDataUpdate(BaseModel):
     participants: Optional[List[str]] = Field(None, description="List of participant names")
     languages: Optional[List[str]] = Field(None, description="List of language codes detected/used in the meeting")
     notes: Optional[str] = Field(None, description="Meeting notes or description")
+    summary: Optional[str] = Field(None, description="Generated meeting summary")
 
     @field_validator('languages')
     @classmethod

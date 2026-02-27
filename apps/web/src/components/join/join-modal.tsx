@@ -203,7 +203,7 @@ export function JoinModal() {
       closeModal();
 
       // Navigate to the meeting page
-      router.push(`/meetings/${meeting.id}`);
+      router.push(`/dashboard/meetings/${meeting.id}`);
     } catch (error) {
       console.error("Failed to create bot:", error);
 
@@ -220,7 +220,7 @@ export function JoinModal() {
           await startZoomOAuth({
             userEmail: user.email,
             pendingRequest: request,
-            returnTo: "/meetings",
+            returnTo: "/dashboard/meetings/all",
           });
           return;
         } catch (oauthError) {
