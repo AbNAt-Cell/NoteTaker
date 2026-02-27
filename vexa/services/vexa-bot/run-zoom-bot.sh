@@ -13,7 +13,7 @@ set -e
 MEETING_URL="${ZOOM_MEETING_URL:-https://us05web.zoom.us/j/81137509581?pwd=swiL9I4MliS99mTVV1FXDCWsgaiRvy.1}"
 BOT_NAME="${ZOOM_BOT_NAME:-Vexa Bot}"
 REDIS_URL="${REDIS_URL:-redis://redis:6379/0}"
-WHISPER_LIVE_URL="${WHISPER_LIVE_URL:-ws://whisperlive:9090/ws}"
+DEEPGRAM_API_KEY="${DEEPGRAM_API_KEY:-}"
 ZOOM_CLIENT_ID="${ZOOM_CLIENT_ID:-6gMe9aY8R8OG1pqsmTFBBg}"
 ZOOM_CLIENT_SECRET="${ZOOM_CLIENT_SECRET:-mN9cMR039CnNvsE8TGSifduK11k7C6g8}"
 
@@ -36,7 +36,7 @@ docker run --rm \
   --platform linux/amd64 \
   --network vexa_dev_vexa_default \
   -e "BOT_CONFIG=$BOT_CONFIG" \
-  -e "WHISPER_LIVE_URL=$WHISPER_LIVE_URL" \
+  -e DEEPGRAM_API_KEY="${DEEPGRAM_API_KEY}" \
   -e "ZOOM_CLIENT_ID=$ZOOM_CLIENT_ID" \
   -e "ZOOM_CLIENT_SECRET=$ZOOM_CLIENT_SECRET" \
   vexa-bot:dev

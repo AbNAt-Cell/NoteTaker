@@ -1,7 +1,7 @@
 import { Page } from "playwright";
 import { log } from "../../utils";
 import { BotConfig } from "../../types";
-import { WhisperLiveService } from "../../services/whisperlive";
+import { DeepgramService } from "../../services/deepgram";
 import { RecordingService } from "../../services/recording";
 import { setActiveRecordingService } from "../../index";
 import { ensureBrowserUtils } from "../../utils/injection";
@@ -23,15 +23,16 @@ import {
 // Modified to use new services - Teams recording functionality
 export async function startTeamsRecording(page: Page, botConfig: BotConfig): Promise<void> {
   const transcriptionEnabled = botConfig.transcribeEnabled !== false;
-  let whisperLiveService: WhisperLiveService | null = null;
-  let whisperLiveUrl: string | null = null;
+  let deepgramService: DeepgramService | null = null;
+  let deepgramApiKey: string | null = null;
   if (transcriptionEnabled) {
-    whisperLiveService = new WhisperLiveService({
-      whisperLiveUrl: process.env.WHISPER_LIVE_URL
+    deepgramService = new DeepgramService({
+      deepgramApiKey: process.env.DEEPGRAM_API_KEY
     });
-    // Initialize WhisperLive connection with STUBBORN reconnection - NEVER GIVES UP!
-    whisperLiveUrl = await whisperLiveService.initializeWithStubbornReconnection("Teams");
-    log(`[Node.js] Using WhisperLive URL for Teams: ${whisperLiveUrl}`);
+    // Initialize DeepgramService connection with STUBBORN reconnection - NEVER GIVES UP!
+    await deepgramService.initialize();
+    deepgramApiKey = process.env.DEEPGRAM_API_KEY || null;
+    log(`[Node.js] Using Deepgram directly for Teams`);
   } else {
     log("[Teams Recording] Transcription disabled by config; running recording-only mode.");
   }
@@ -78,13 +79,24 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
     log("[Teams Recording] Audio capture disabled by config.");
   }
 
+  await page.exposeFunction("vexa_pushTranscriptToRedis", async (uid: string, segment: any, botConfigData: any) => {
+    try {
+      if (deepgramService) {
+        // Access the private pushToRedis method by invoking it with cast
+        await (deepgramService as any).pushToRedis(segment, botConfigData);
+      }
+    } catch (err: any) {
+      log(`[Node.js] Error pushing browser transcript to Redis: ${err.message}`);
+    }
+  });
+
   await ensureBrowserUtils(page, require('path').join(__dirname, '../../browser-utils.global.js'));
 
   // Pass the necessary config fields and the resolved URL into the page context
   await page.evaluate(
     async (pageArgs: {
       botConfigData: BotConfig;
-      whisperUrlForBrowser: string | null;
+      deepgramApiKeyForBrowser: string | null;
       selectors: {
         participantSelectors: string[];
         speakingClasses: string[];
@@ -100,12 +112,12 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
         meetingContainerSelectors: string[];
       };
     }) => {
-      const { botConfigData, whisperUrlForBrowser, selectors } = pageArgs;
+      const { botConfigData, deepgramApiKeyForBrowser, selectors } = pageArgs;
       const transcriptionEnabled = (botConfigData as any)?.transcribeEnabled !== false;
       const selectorsTyped = selectors as any;
 
       // Use browser utility classes from the global bundle
-      const { BrowserAudioService, BrowserWhisperLiveService } = (window as any).VexaBrowserUtils;
+      const { BrowserAudioService, BrowserDeepgramService } = (window as any).VexaBrowserUtils;
 
       // --- Early reconfigure wiring (event listener only) ---
       (window as any).__vexaPendingReconfigure = null;
@@ -116,11 +128,11 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
             const { lang, task } = detail;
             const fn = (window as any).triggerWebSocketReconfigure;
             if (typeof fn === 'function') fn(lang, task);
-          } catch {}
+          } catch { }
         });
-      } catch {}
+      } catch { }
       // ---------------------------------------------
-      
+
       const audioService = new BrowserAudioService({
         targetSampleRate: 16000,
         bufferSize: 4096,
@@ -128,15 +140,15 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
         outputChannels: 1
       });
 
-      // Use BrowserWhisperLiveService with stubborn mode for Teams
-      const whisperLiveService = transcriptionEnabled
-        ? new BrowserWhisperLiveService({
-            whisperLiveUrl: whisperUrlForBrowser as string
-          }, true) // Enable stubborn mode for Teams
+      // Use BrowserDeepgramService with stubborn mode for Teams
+      const deepgramService = transcriptionEnabled
+        ? new BrowserDeepgramService({
+          deepgramApiKey: deepgramApiKeyForBrowser as string
+        }, true) // Enable stubborn mode for Teams
         : null;
 
       // Expose references for reconfiguration
-      (window as any).__vexaWhisperLiveService = whisperLiveService;
+      (window as any).__vexaDeepgramService = deepgramService;
       (window as any).__vexaAudioService = audioService;
       (window as any).__vexaBotConfig = botConfigData;
       (window as any).__vexaMediaRecorder = null;
@@ -160,7 +172,7 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
             if ((window as any).MediaRecorder?.isTypeSupported?.(mime)) {
               return mime;
             }
-          } catch {}
+          } catch { }
         }
         return "";
       };
@@ -248,7 +260,7 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
       // Replace with real reconfigure implementation and apply any queued update
       (window as any).triggerWebSocketReconfigure = async (lang: string | null, task: string | null) => {
         try {
-          const svc = (window as any).__vexaWhisperLiveService;
+          const svc = (window as any).__vexaDeepgramService;
           const cfg = (window as any).__vexaBotConfig || {};
           if (!transcriptionEnabled) {
             (window as any).logBot?.('[Reconfigure] Ignored because transcription is disabled.');
@@ -263,10 +275,10 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
           cfg.language = lang;
           cfg.task = task || 'transcribe';
           (window as any).__vexaBotConfig = cfg;
-          
+
           // Close existing connection to establish new session from scratch
           (window as any).logBot?.(`[Reconfigure] Closing existing connection to establish new session...`);
-          try { 
+          try {
             // Use closeForReconfigure to prevent auto-reconnect during manual reconfigure
             if (svc?.closeForReconfigure) {
               svc.closeForReconfigure();
@@ -283,10 +295,10 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
           } catch (closeErr: any) {
             (window as any).logBot?.(`[Reconfigure] Error closing connection: ${closeErr?.message || closeErr}`);
           }
-          
+
           // Reconnect with new config - this will generate a new session_uid
           (window as any).logBot?.(`[Reconfigure] Reconnecting with new config: language=${cfg.language}, task=${cfg.task}`);
-          await svc.connectToWhisperLive(
+          await svc.connectToDeepgram(
             cfg,
             (window as any).__vexaOnMessage,
             (window as any).__vexaOnError,
@@ -303,12 +315,12 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
           (window as any).triggerWebSocketReconfigure(pending.lang, pending.task);
           (window as any).__vexaPendingReconfigure = null;
         }
-      } catch {}
+      } catch { }
 
       await new Promise<void>((resolve, reject) => {
         try {
           (window as any).logBot("Starting Teams recording process with new services.");
-          
+
           // Find and create combined audio stream
           audioService.findMediaElements().then(async (mediaElements: HTMLMediaElement[]) => {
             if (mediaElements.length === 0) {
@@ -362,11 +374,11 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
           }).then(async (processor: any) => {
             // Setup audio data processing
             audioService.setupAudioDataProcessor(async (audioData: Float32Array, sessionStartTime: number | null) => {
-              if (!transcriptionEnabled || !whisperLiveService) {
+              if (!transcriptionEnabled || !deepgramService) {
                 return;
               }
               // Only send after server ready
-              if (!whisperLiveService.isReady()) {
+              if (!deepgramService.isReady()) {
                 return;
               }
               // Compute simple RMS and peak for diagnostics
@@ -380,9 +392,9 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
               }
               const rms = Math.sqrt(sumSquares / Math.max(1, audioData.length));
               // Diagnostic: send metadata first
-              whisperLiveService.sendAudioChunkMetadata(audioData.length, 16000);
+              deepgramService.sendAudioChunkMetadata(audioData.length, 16000);
               // Send audio data to WhisperLive
-              const success = whisperLiveService.sendAudioData(audioData);
+              const success = deepgramService.sendAudioData(audioData);
               if (!success) {
                 (window as any).logBot("Failed to send Teams audio data to WhisperLive");
               }
@@ -394,15 +406,15 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                 (window as any).logBot(`Teams WebSocket Server Error: ${data["message"]}`);
               } else if (data["status"] === "WAIT") {
                 (window as any).logBot(`Teams Server busy: ${data["message"]}`);
-              } else if (!whisperLiveService.isReady() && data["status"] === "SERVER_READY") {
-                whisperLiveService.setServerReady(true);
+              } else if (!deepgramService.isReady() && data["status"] === "SERVER_READY") {
+                deepgramService.setServerReady(true);
                 (window as any).logBot("Teams Server is ready.");
               } else if (data["language"]) {
                 (window as any).logBot(`Teams Language detected: ${data["language"]}`);
               } else if (data["message"] === "DISCONNECT") {
                 (window as any).logBot("Teams Server requested disconnect.");
-                if (whisperLiveService) {
-                  whisperLiveService.close();
+                if (deepgramService) {
+                  deepgramService.close();
                 }
               }
             };
@@ -418,8 +430,8 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
             (window as any).__vexaOnError = onError;
             (window as any).__vexaOnClose = onClose;
 
-            if (transcriptionEnabled && whisperLiveService) {
-              return await whisperLiveService.connectToWhisperLive(
+            if (transcriptionEnabled && deepgramService) {
+              return await deepgramService.connectToDeepgram(
                 (window as any).__vexaBotConfig,
                 onMessage,
                 onError,
@@ -429,21 +441,21 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
             return null;
           }).then(() => {
             // Initialize Teams-specific speaker detection (browser context)
-            if (transcriptionEnabled && whisperLiveService) {
+            if (transcriptionEnabled && deepgramService) {
               (window as any).logBot("Initializing Teams speaker detection...");
             }
-            
+
             // Unified Teams speaker detection - NO FALLBACKS (signal-only approach)
-            const initializeTeamsSpeakerDetection = (whisperLiveService: any, audioService: any, botConfigData: any) => {
+            const initializeTeamsSpeakerDetection = (deepgramService: any, audioService: any, botConfigData: any) => {
               (window as any).logBot("Setting up ROBUST Teams speaker detection (NO FALLBACKS - signal-only)...");
-              
+
               // Teams-specific configuration for speaker detection
               const participantSelectors = selectors.participantSelectors;
-              
+
               // ============================================================================
               // UNIFIED SPEAKER DETECTION SYSTEM (NO FALLBACKS)
               // ============================================================================
-              
+
               // Participant Identity Cache
               interface ParticipantIdentity {
                 id: string;
@@ -451,7 +463,7 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                 element: HTMLElement;
                 lastSeen: number;
               }
-              
+
               class ParticipantRegistry {
                 private cache = new Map<HTMLElement, ParticipantIdentity>();
                 private idToElement = new Map<string, HTMLElement>();
@@ -460,18 +472,18 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                   if (!this.cache.has(element)) {
                     const id = this.extractId(element);
                     const name = this.extractName(element);
-                    
+
                     const identity: ParticipantIdentity = {
                       id,
                       name,
                       element,
                       lastSeen: Date.now()
                     };
-                    
+
                     this.cache.set(element, identity);
                     this.idToElement.set(id, element);
                   }
-                  
+
                   return this.cache.get(element)!;
                 }
 
@@ -486,71 +498,71 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                 private extractId(element: HTMLElement): string {
                   // Use data-acc-element-id as primary (most stable)
                   let id = element.getAttribute('data-acc-element-id') ||
-                           element.getAttribute('data-tid') ||
-                        element.getAttribute('data-participant-id') ||
-                        element.getAttribute('data-user-id') ||
-                        element.getAttribute('data-object-id') ||
-                        element.getAttribute('id');
-                
-                if (!id) {
+                    element.getAttribute('data-tid') ||
+                    element.getAttribute('data-participant-id') ||
+                    element.getAttribute('data-user-id') ||
+                    element.getAttribute('data-object-id') ||
+                    element.getAttribute('id');
+
+                  if (!id) {
                     const stableChild = element.querySelector(selectorsTyped.participantIdSelectors?.join(', ') || '[data-tid]');
-                  if (stableChild) {
-                    id = stableChild.getAttribute('data-tid') || 
-                         stableChild.getAttribute('data-participant-id') ||
-                         stableChild.getAttribute('data-user-id');
+                    if (stableChild) {
+                      id = stableChild.getAttribute('data-tid') ||
+                        stableChild.getAttribute('data-participant-id') ||
+                        stableChild.getAttribute('data-user-id');
+                    }
                   }
-                }
-                
-                if (!id) {
-                  if (!(element as any).dataset.vexaGeneratedId) {
-                    (element as any).dataset.vexaGeneratedId = 'teams-id-' + Math.random().toString(36).substr(2, 9);
-                  }
+
+                  if (!id) {
+                    if (!(element as any).dataset.vexaGeneratedId) {
+                      (element as any).dataset.vexaGeneratedId = 'teams-id-' + Math.random().toString(36).substr(2, 9);
+                    }
                     id = (element as any).dataset.vexaGeneratedId as string;
-                }
-                
+                  }
+
                   return id!;
-              }
-              
+                }
+
                 private extractName(element: HTMLElement): string {
                   const nameSelectors = selectors.nameSelectors || [];
-                
-                for (const selector of nameSelectors) {
+
+                  for (const selector of nameSelectors) {
                     const nameElement = element.querySelector(selector) as HTMLElement;
-                  if (nameElement) {
-                    let nameText = nameElement.textContent || 
-                                  nameElement.innerText || 
-                                  nameElement.getAttribute('title') ||
-                                  nameElement.getAttribute('aria-label');
-                    
-                    if (nameText && nameText.trim()) {
-                      nameText = nameText.trim();
-                      
-                      const forbiddenSubstrings = [
-                        "more_vert", "mic_off", "mic", "videocam", "videocam_off", 
-                        "present_to_all", "devices", "speaker", "speakers", "microphone",
-                        "camera", "camera_off", "share", "chat", "participant", "user"
-                      ];
-                      
+                    if (nameElement) {
+                      let nameText = nameElement.textContent ||
+                        nameElement.innerText ||
+                        nameElement.getAttribute('title') ||
+                        nameElement.getAttribute('aria-label');
+
+                      if (nameText && nameText.trim()) {
+                        nameText = nameText.trim();
+
+                        const forbiddenSubstrings = [
+                          "more_vert", "mic_off", "mic", "videocam", "videocam_off",
+                          "present_to_all", "devices", "speaker", "speakers", "microphone",
+                          "camera", "camera_off", "share", "chat", "participant", "user"
+                        ];
+
                         if (!forbiddenSubstrings.some(sub => nameText!.toLowerCase().includes(sub.toLowerCase()))) {
-                        if (nameText.length > 1 && nameText.length < 50) {
-                          return nameText;
+                          if (nameText.length > 1 && nameText.length < 50) {
+                            return nameText;
+                          }
                         }
                       }
                     }
                   }
-                }
-                
+
                   const ariaLabel = element.getAttribute('aria-label');
-                if (ariaLabel && ariaLabel.includes('name')) {
-                  const nameMatch = ariaLabel.match(/name[:\s]+([^,]+)/i);
-                  if (nameMatch && nameMatch[1]) {
-                    const nameText = nameMatch[1].trim();
-                    if (nameText.length > 1 && nameText.length < 50) {
-                      return nameText;
+                  if (ariaLabel && ariaLabel.includes('name')) {
+                    const nameMatch = ariaLabel.match(/name[:\s]+([^,]+)/i);
+                    if (nameMatch && nameMatch[1]) {
+                      const nameText = nameMatch[1].trim();
+                      if (nameText.length > 1 && nameText.length < 50) {
+                        return nameText;
+                      }
                     }
                   }
-                }
-                
+
                   const id = this.extractId(element);
                   return `Teams Participant (${id})`;
                 }
@@ -626,7 +638,7 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
 
                 detectSpeakingState(element: HTMLElement): SpeakingDetectionResult {
                   const voiceOutline = element.querySelector(this.VOICE_LEVEL_SELECTOR) as HTMLElement | null;
-                  
+
                   if (!voiceOutline) {
                     return { isSpeaking: false, hasSignal: false };
                   }
@@ -635,7 +647,7 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                   // vdi-frame-occlusion class presence = speaking, absence = not speaking
                   let current: HTMLElement | null = voiceOutline;
                   let hasVdiFrameOcclusion = false;
-                  
+
                   // Check the element itself and walk up the parent chain
                   while (current && !hasVdiFrameOcclusion) {
                     if (current.classList.contains('vdi-frame-occlusion')) {
@@ -644,7 +656,7 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                     }
                     current = current.parentElement;
                   }
-                  
+
                   return {
                     isSpeaking: hasVdiFrameOcclusion,
                     hasSignal: true
@@ -656,20 +668,20 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                 }
 
                 private isElementVisible(el: HTMLElement): boolean {
-                const cs = getComputedStyle(el);
-                const rect = el.getBoundingClientRect();
-                const ariaHidden = el.getAttribute('aria-hidden') === 'true';
-                const transform = cs.transform || '';
+                  const cs = getComputedStyle(el);
+                  const rect = el.getBoundingClientRect();
+                  const ariaHidden = el.getAttribute('aria-hidden') === 'true';
+                  const transform = cs.transform || '';
                   const scaledToZero = /matrix\((?:[^,]+,){4}\s*0(?:,|\s*\))/.test(transform) ||
-                                       transform.includes('scale(0');
+                    transform.includes('scale(0');
 
-                return (
-                  rect.width > 0 &&
-                  rect.height > 0 &&
-                  cs.display !== 'none' &&
-                  cs.visibility !== 'hidden' &&
-                  cs.opacity !== '0' &&
-                  !ariaHidden &&
+                  return (
+                    rect.width > 0 &&
+                    rect.height > 0 &&
+                    cs.display !== 'none' &&
+                    cs.visibility !== 'hidden' &&
+                    cs.opacity !== '0' &&
+                    !ariaHidden &&
                     !scaledToZero
                   );
                 }
@@ -717,23 +729,23 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
               const debouncer = new EventDebouncer(300);
               const observers = new Map<HTMLElement, MutationObserver[]>();
               const rafHandles = new Map<string, number>();
-              
+
               // State for tracking speaking status (for cleanup)
               const speakingStates = new Map<string, SpeakingState>();
-              
+
               // Event emission helper
               function sendTeamsSpeakerEvent(eventType: string, identity: ParticipantIdentity) {
                 const eventAbsoluteTimeMs = Date.now();
                 const sessionStartTime = audioService.getSessionAudioStartTime();
-                
+
                 if (sessionStartTime === null) {
                   return;
                 }
-                
+
                 const relativeTimestampMs = eventAbsoluteTimeMs - sessionStartTime;
-                
+
                 try {
-                  whisperLiveService.sendSpeakerEvent(
+                  deepgramService.sendSpeakerEvent(
                     eventType,
                     identity.name,
                     identity.id,
@@ -829,7 +841,7 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                   }
 
                   checkAndEmit(identity);
-                  
+
                   const handle = requestAnimationFrame(check);
                   rafHandles.set(identity.id, handle);
                 };
@@ -867,8 +879,8 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
 
               function emitEvent(state: SpeakingState, identity: ParticipantIdentity) {
                 if (state === 'unknown') {
-                      return;
-                    }
+                  return;
+                }
 
                 const eventType = state === 'speaking' ? 'SPEAKER_START' : 'SPEAKER_END';
                 const emoji = state === 'speaking' ? '🎤' : '🔇';
@@ -904,7 +916,7 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
 
               // Initialize speaker detection
               scanAndObserveAll();
-              
+
               // Monitor for new participants
               const bodyObserver = new MutationObserver((mutationsList) => {
                 for (const mutation of mutationsList) {
@@ -912,7 +924,7 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                     mutation.addedNodes.forEach(node => {
                       if (node.nodeType === Node.ELEMENT_NODE) {
                         const elementNode = node as HTMLElement;
-                        
+
                         // Check if the added node matches any participant selector OR [role="menuitem"]
                         const allSelectors = [...participantSelectors, '[role="menuitem"]'];
                         for (const selector of allSelectors) {
@@ -920,7 +932,7 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                             // observeParticipant will check for signal before observing
                             observeParticipant(elementNode);
                           }
-                          
+
                           // Check children
                           const childElements = elementNode.querySelectorAll(selector);
                           childElements.forEach(childEl => {
@@ -932,11 +944,11 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                         }
                       }
                     });
-                    
+
                     mutation.removedNodes.forEach(node => {
                       if (node.nodeType === Node.ELEMENT_NODE) {
                         const elementNode = node as HTMLElement;
-                        
+
                         // Check if removed node was a participant
                         for (const selector of participantSelectors) {
                           if (elementNode.matches(selector)) {
@@ -963,7 +975,7 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
 
               // Simple participant counting - poll every 5 seconds using ARIA list
               let currentParticipantCount = 0;
-              
+
               const countParticipants = () => {
                 const names = collectAriaParticipants();
                 const totalCount = botConfigData?.name ? names.length + 1 : names.length;
@@ -973,11 +985,11 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                 }
                 return totalCount;
               };
-              
+
               // Do initial count immediately, then poll every 5 seconds
               countParticipants();
               setInterval(countParticipants, 5000);
-              
+
               // Expose participant count for meeting monitoring
               // Accessible-roles based participant collection (robust and simple)
               function collectAriaParticipants(): string[] {
@@ -1023,13 +1035,13 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
             };
 
             // Setup Teams meeting monitoring (browser context)
-            const setupTeamsMeetingMonitoring = (botConfigData: any, audioService: any, whisperLiveService: any, resolve: any) => {
+            const setupTeamsMeetingMonitoring = (botConfigData: any, audioService: any, deepgramService: any, resolve: any) => {
               (window as any).logBot("Setting up Teams meeting monitoring...");
-              
+
               const leaveCfg = (botConfigData && (botConfigData as any).automaticLeave) || {};
               const startupAloneTimeoutSeconds = Number(leaveCfg.startupAloneTimeoutSeconds ?? 10);
               const everyoneLeftTimeoutSeconds = Number(leaveCfg.everyoneLeftTimeoutSeconds ?? 10);
-              
+
               let aloneTime = 0;
               let lastParticipantCount = 0;
               let speakersIdentified = false;
@@ -1053,7 +1065,7 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                   );
                 }
                 audioService.disconnect();
-                whisperLiveService.close();
+                deepgramService.close();
                 finish();
               };
 
@@ -1108,14 +1120,14 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
                 }
                 // Check participant count using the comprehensive speaker detection system
                 const currentParticipantCount = (window as any).getTeamsActiveParticipantsCount ? (window as any).getTeamsActiveParticipantsCount() : 0;
-                
+
                 if (currentParticipantCount !== lastParticipantCount) {
                   (window as any).logBot(`🔢 Teams participant count changed: ${lastParticipantCount} → ${currentParticipantCount}`);
                   const participantList = (window as any).getTeamsActiveParticipants ? (window as any).getTeamsActiveParticipants() : [];
                   (window as any).logBot(`👥 Current participants: ${JSON.stringify(participantList)}`);
-                  
+
                   lastParticipantCount = currentParticipantCount;
-                  
+
                   // Track if we've ever had multiple participants
                   if (currentParticipantCount > 1) {
                     hasEverHadMultipleParticipants = true;
@@ -1126,13 +1138,13 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
 
                 if (currentParticipantCount === 0) {
                   aloneTime++;
-                  
+
                   // Determine timeout based on whether speakers have been identified
                   const currentTimeout = speakersIdentified ? everyoneLeftTimeoutSeconds : startupAloneTimeoutSeconds;
                   const timeoutDescription = speakersIdentified ? "post-speaker" : "startup";
-                  
+
                   (window as any).logBot(`⏱️ Teams bot alone time: ${aloneTime}s/${currentTimeout}s (${timeoutDescription} mode, speakers identified: ${speakersIdentified})`);
-                  
+
                   if (aloneTime >= currentTimeout) {
                     if (speakersIdentified) {
                       (window as any).logBot(`Teams meeting ended or bot has been alone for ${everyoneLeftTimeoutSeconds} seconds after speakers were identified. Stopping recorder...`);
@@ -1178,12 +1190,12 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
             };
 
             // Initialize Teams-specific speaker detection
-            if (transcriptionEnabled && whisperLiveService) {
-              initializeTeamsSpeakerDetection(whisperLiveService, audioService, botConfigData);
+            if (transcriptionEnabled && deepgramService) {
+              initializeTeamsSpeakerDetection(deepgramService, audioService, botConfigData);
             }
-            
+
             // Setup Teams meeting monitoring
-            setupTeamsMeetingMonitoring(botConfigData, audioService, whisperLiveService, resolve);
+            setupTeamsMeetingMonitoring(botConfigData, audioService, deepgramService, resolve);
           }).catch((err: any) => {
             reject(err);
           });
@@ -1199,11 +1211,11 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
           (window as any).triggerWebSocketReconfigure(pending.lang, pending.task);
           (window as any).__vexaPendingReconfigure = null;
         }
-      } catch {}
+      } catch { }
     },
-    { 
-      botConfigData: botConfig, 
-      whisperUrlForBrowser: whisperLiveUrl,
+    {
+      botConfigData: botConfig,
+      deepgramApiKeyForBrowser: deepgramApiKey,
       selectors: {
         participantSelectors: teamsParticipantSelectors,
         speakingClasses: teamsSpeakingClassNames,
@@ -1220,9 +1232,9 @@ export async function startTeamsRecording(page: Page, botConfig: BotConfig): Pro
       } as any
     }
   );
-  
+
   // After page.evaluate finishes, cleanup services
-  if (whisperLiveService) {
-    await whisperLiveService.cleanup();
+  if (deepgramService) {
+    await deepgramService.cleanup();
   }
 }

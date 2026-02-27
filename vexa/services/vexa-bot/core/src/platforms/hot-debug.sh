@@ -108,7 +108,7 @@ docker run --rm --name "$CONTAINER_NAME" \
       "everyoneLeftTimeout":120000
     }
   }' \
-  -e WHISPER_LIVE_URL="ws://whisperlive-remote:9090" \
+  -e DEEPGRAM_API_KEY="${DEEPGRAM_API_KEY}" \
   -e WL_MAX_CLIENTS="10" \
   -e LOG_LEVEL="DEBUG" \
   --cap-add=SYS_ADMIN \

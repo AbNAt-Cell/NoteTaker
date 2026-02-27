@@ -160,7 +160,7 @@ The bot is configured via a `BOT_CONFIG` JSON string passed as an environment va
 | Variable | Description |
 |----------|-------------|
 | `BOT_CONFIG` | JSON string with the full bot configuration (see above) |
-| `WHISPER_LIVE_URL` | WebSocket URL of the WhisperLive server (e.g. `ws://whisperlive:9090/ws`) |
+| `DEEPGRAM_API_KEY` | Your Deepgram API Key for real-time transcription |
 | `WL_MAX_CLIENTS` | Max WhisperLive client connections |
 | `ZOOM_CLIENT_ID` | Zoom SDK client ID (Zoom platform only) |
 | `ZOOM_CLIENT_SECRET` | Zoom SDK client secret (Zoom platform only) |
@@ -201,7 +201,7 @@ docker run --rm \
       "everyoneLeftTimeout": 300000
     }
   }' \
-  -e WHISPER_LIVE_URL=ws://whisperlive:9090/ws \
+  -e DEEPGRAM_API_KEY=${DEEPGRAM_API_KEY} \
   vexa-bot
 ```
 

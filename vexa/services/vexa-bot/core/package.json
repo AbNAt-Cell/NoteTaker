@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@deepgram/sdk": "^3.13.0",
     "@types/uuid": "^10.0.0",
     "playwright": "^1.55.1",
     "playwright-extra": "^4.3.6",

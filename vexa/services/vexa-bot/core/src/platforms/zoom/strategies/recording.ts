@@ -1,14 +1,14 @@
 import { Page } from 'playwright';
 import { BotConfig } from '../../../types';
-import { WhisperLiveService } from '../../../services/whisperlive';
+import { DeepgramService } from '../../../services/deepgram';
 import { RecordingService } from '../../../services/recording';
 import { setActiveRecordingService } from '../../../index';
 import { getSDKManager } from './join';
 import { log } from '../../../utils';
 import { spawn, ChildProcess } from 'child_process';
 
-let whisperLive: WhisperLiveService | null = null;
-let whisperSocket: WebSocket | null = null;
+let deepgramService: DeepgramService | null = null;
+let deepgramSocket: any = null;
 let recordingStopResolver: (() => void) | null = null;
 let parecordProcess: ChildProcess | null = null;
 let audioSessionStartTime: number | null = null;
@@ -23,43 +23,43 @@ export async function startZoomRecording(page: Page | null, botConfig: BotConfig
 
   try {
     if (transcriptionEnabled) {
-      // Initialize WhisperLive service
-      whisperLive = new WhisperLiveService({
-        whisperLiveUrl: process.env.WHISPER_LIVE_URL
+      // Initialize Deepgram service
+      deepgramService = new DeepgramService({
+        deepgramApiKey: process.env.DEEPGRAM_API_KEY
       });
 
       // Initialize connection
-      const whisperLiveUrl = await whisperLive.initialize();
-      if (!whisperLiveUrl) {
-        throw new Error('[Zoom] Failed to initialize WhisperLive URL');
+      const deepgramUrl = await deepgramService.initialize();
+      if (!deepgramUrl) {
+        throw new Error('[Zoom] Failed to initialize Deepgram URL');
       }
-      log(`[Zoom] WhisperLive URL initialized: ${whisperLiveUrl}`);
+      log(`[Zoom] Deepgram API initialized`);
 
-      // Connect to WhisperLive with event handlers
-      whisperSocket = await whisperLive.connectToWhisperLive(
+      // Connect to Deepgram with event handlers
+      deepgramSocket = await deepgramService.connectToDeepgram(
         botConfig,
         (data: any) => {
           // Handle incoming messages (transcriptions, etc.)
           if (data.message === 'SERVER_READY') {
-            log('[Zoom] WhisperLive server ready');
+            log('[Zoom] Deepgram server ready');
           }
         },
-        (error: Event) => {
-          log(`[Zoom] WhisperLive error: ${error}`);
+        (error: any) => {
+          log(`[Zoom] Deepgram error: ${error}`);
         },
-        (event: CloseEvent) => {
-          log(`[Zoom] WhisperLive connection closed: ${event.code} ${event.reason}`);
+        (event: any) => {
+          log(`[Zoom] Deepgram connection closed`);
         }
       );
 
-      if (!whisperSocket) {
-        throw new Error('[Zoom] Failed to connect to WhisperLive');
+      if (!deepgramSocket) {
+        throw new Error('[Zoom] Failed to connect to Deepgram');
       }
-      log('[Zoom] WhisperLive connected successfully');
+      log('[Zoom] Deepgram connected successfully');
     } else {
       log('[Zoom] Transcription disabled by config; running recording-only mode.');
-      whisperLive = null;
-      whisperSocket = null;
+      deepgramService = null;
+      deepgramSocket = null;
     }
 
     // Initialize audio recording if enabled
@@ -76,18 +76,21 @@ export async function startZoomRecording(page: Page | null, botConfig: BotConfig
     let sdkRecordingSucceeded = false;
     try {
       await sdkManager.startRecording((buffer: Buffer, sampleRate: number) => {
-        if (whisperLive) {
-          const float32 = bufferToFloat32(buffer);
-          if (transcriptionEnabled && whisperLive) {
-            whisperLive.sendAudioData(float32);
+        if (deepgramService) {
+          if (transcriptionEnabled) {
+            deepgramService.sendAudioData(buffer); // Send raw Int16 Buffer to Deepgram
           }
           // Also capture for recording
           if (recordingService) {
+            const float32 = bufferToFloat32(buffer);
             recordingService.appendChunk(float32);
           }
+        } else if (recordingService) {
+          const float32 = bufferToFloat32(buffer);
+          recordingService.appendChunk(float32);
         }
       });
-      log('[Zoom] SDK raw audio recording started, streaming to WhisperLive');
+      log('[Zoom] SDK raw audio recording started, streaming to Deepgram');
       sdkRecordingSucceeded = true;
     } catch (recordingError: any) {
       const msg = recordingError?.message ?? String(recordingError);
@@ -96,7 +99,7 @@ export async function startZoomRecording(page: Page | null, botConfig: BotConfig
         log('[Zoom] SDK raw audio not available (license missing). Falling back to PulseAudio capture...');
         // Fall back to PulseAudio capture from the null sink monitor
         try {
-          await startPulseAudioCapture(whisperLive);
+          await startPulseAudioCapture(deepgramService);
           log('[Zoom] PulseAudio capture started successfully');
         } catch (paError) {
           log(`[Zoom] PulseAudio capture failed: ${paError}. Staying in meeting without transcription.`);
@@ -112,7 +115,7 @@ export async function startZoomRecording(page: Page | null, botConfig: BotConfig
 
     // Register speaker change callback
     await sdkManager.onActiveSpeakerChange((activeUserIds: number[]) => {
-      handleActiveSpeakerChange(activeUserIds, sdkManager, whisperLive, botConfig);
+      handleActiveSpeakerChange(activeUserIds, sdkManager, deepgramService, botConfig);
     });
     log('[Zoom] Speaker detection initialized');
 
@@ -150,12 +153,15 @@ export async function stopZoomRecording(): Promise<void> {
     const sdkManager = getSDKManager();
     await sdkManager.stopRecording();
 
-    if (whisperSocket) {
-      whisperSocket.close();
-      whisperSocket = null;
+    if (deepgramSocket) {
+      deepgramSocket.finish();
+      deepgramSocket = null;
     }
 
-    whisperLive = null;
+    if (deepgramService) {
+      await deepgramService.cleanup();
+      deepgramService = null;
+    }
 
     // Finalize the audio recording file
     if (recordingService) {
@@ -197,7 +203,7 @@ function bufferToFloat32(buffer: Buffer): Float32Array {
  * Start PulseAudio capture from the zoom_sink monitor.
  * Captures raw PCM audio and forwards to WhisperLive.
  */
-async function startPulseAudioCapture(whisperLive: WhisperLiveService | null): Promise<void> {
+async function startPulseAudioCapture(deepgramService: DeepgramService | null): Promise<void> {
   return new Promise((resolve, reject) => {
     // Spawn parecord to capture from zoom_sink monitor
     // Output: raw PCM Int16LE, 16kHz, mono
@@ -223,9 +229,8 @@ async function startPulseAudioCapture(whisperLive: WhisperLiveService | null): P
         started = true;
         resolve();
       }
-      if (whisperLive) {
-        const float32 = bufferToFloat32(chunk);
-        whisperLive.sendAudioData(float32);
+      if (deepgramService) {
+        deepgramService.sendAudioData(chunk);
         // Also capture for recording
         if (recordingService) {
           recordingService.appendPCMBuffer(chunk);
@@ -268,10 +273,10 @@ async function startPulseAudioCapture(whisperLive: WhisperLiveService | null): P
 function handleActiveSpeakerChange(
   activeUserIds: number[],
   sdkManager: any,
-  whisperLive: WhisperLiveService | null,
+  deepgramService: DeepgramService | null,
   botConfig: BotConfig
 ): void {
-  if (!whisperLive || !audioSessionStartTime) {
+  if (!deepgramService || !audioSessionStartTime) {
     return;
   }
 
@@ -284,7 +289,7 @@ function handleActiveSpeakerChange(
       const userInfo = sdkManager.getUserInfo(userId);
       if (userInfo) {
         log(`🎤 [Zoom] SPEAKER_START: ${userInfo.userName} (ID: ${userId})`);
-        whisperLive.sendSpeakerEvent(
+        deepgramService.sendSpeakerEvent(
           'SPEAKER_START',
           userInfo.userName,
           String(userId),
@@ -301,7 +306,7 @@ function handleActiveSpeakerChange(
       const userInfo = sdkManager.getUserInfo(userId);
       if (userInfo) {
         log(`🔇 [Zoom] SPEAKER_END: ${userInfo.userName} (ID: ${userId})`);
-        whisperLive.sendSpeakerEvent(
+        deepgramService.sendSpeakerEvent(
           'SPEAKER_END',
           userInfo.userName,
           String(userId),

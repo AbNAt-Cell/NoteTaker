@@ -1,3 +1,4 @@
-export { WhisperLiveService, type WhisperLiveConfig, type WhisperLiveConnection } from './whisperlive';
+
+export { DeepgramService, type DeepgramConfig, type DeepgramConnection } from './deepgram';
 export { AudioService, type AudioProcessorConfig, type AudioProcessor } from './audio';
 export { RecordingService } from './recording';
