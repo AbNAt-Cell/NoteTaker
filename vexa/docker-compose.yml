@@ -221,12 +221,14 @@ services:
     # Don't auto-start CPU version, users can manually start it
     restart: unless-stopped
 
-  # Remote API version of WhisperLive
+  # Deepgram-backed WhisperLive (no GPU required)
   whisperlive-remote:
-    profiles: [ "remote" ]
     build:
       context: .
       dockerfile: services/WhisperLive/Dockerfile.cpu
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     volumes:
       - ./hub:/root/.cache/huggingface/hub
       - ./services/WhisperLive/models:/app/models
