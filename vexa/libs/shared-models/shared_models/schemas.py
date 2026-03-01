@@ -54,6 +54,7 @@ class MeetingStatus(str, Enum):
     AWAITING_ADMISSION = "awaiting_admission"
     ACTIVE = "active"
     STOPPING = "stopping"
+    TRANSCRIBING = "transcribing"
     COMPLETED = "completed"
     FAILED = "failed"
 
@@ -108,10 +109,16 @@ def get_valid_status_transitions() -> Dict[MeetingStatus, List[MeetingStatus]]:
         ],
         MeetingStatus.ACTIVE: [
             MeetingStatus.STOPPING,
+            MeetingStatus.TRANSCRIBING,
             MeetingStatus.COMPLETED,
             MeetingStatus.FAILED,
         ],
         MeetingStatus.STOPPING: [
+            MeetingStatus.TRANSCRIBING,
+            MeetingStatus.COMPLETED,
+            MeetingStatus.FAILED,
+        ],
+        MeetingStatus.TRANSCRIBING: [
             MeetingStatus.COMPLETED,
             MeetingStatus.FAILED,
         ],

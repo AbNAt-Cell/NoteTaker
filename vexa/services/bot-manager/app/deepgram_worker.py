@@ -58,6 +58,7 @@ async def _process_deepgram_batch_transcription(
             smart_format=True,
             diarize=True,
             language="en",
+            summarize="v2",
         )
 
         logger.info(f"Sending audio to Deepgram API for meeting {meeting_id}...")
@@ -106,6 +107,10 @@ async def _process_deepgram_batch_transcription(
                 logger.error(f"Meeting {meeting_id} disappeared during transcription.")
                 return
 
+            # Set status to transcribing while processing
+            meeting.status = "transcribing"
+            await db.commit()
+
             # Save segments to Postgres
             for seg in segments:
                 t_row = Transcription(
@@ -122,10 +127,24 @@ async def _process_deepgram_batch_transcription(
             # Store full transcript as summary placeholder
             current_data = dict(meeting.data) if meeting.data else {}
             current_data["full_transcript"] = full_transcript_text
+            
+            # Extract and store Deepgram summary if available
+            summary_info = dg_json.get("results", {}).get("summary", {})
+            if summary_info:
+                current_data["summary"] = summary_info.get("short") or summary_info.get("summary")
+            
             meeting.data = current_data
 
             meeting.status = MeetingStatus.COMPLETED.value
             meeting.end_time = datetime.utcnow()
+            
+            # If duration was provided, we can use it, otherwise estimate from last segment
+            if duration_seconds:
+                current_data["duration_seconds"] = duration_seconds
+            elif segments:
+                current_data["duration_seconds"] = segments[-1]["end_time"]
+            
+            meeting.data = current_data
 
             await db.commit()
 

@@ -222,7 +222,7 @@ async def start_bot_container(
         "connectionId": connection_id,
         "language": language,
         "task": task,
-        "transcriptionTier": (transcription_tier or "realtime"),
+        "transcriptionTier": "batch",
         "obfToken": zoom_obf_token if platform == "zoom" else None,
         "redisUrl": REDIS_URL,
         "container_name": container_name,  # ADDED: Container name for identification
@@ -232,9 +232,9 @@ async def start_bot_container(
             "everyoneLeftTimeout": 60000
         },
         "botManagerCallbackUrl": f"http://bot-manager:8080/bots/internal/callback/exited",
-        "recordingEnabled": user_recording_config.get("enabled", os.getenv("RECORDING_ENABLED", "false").lower() == "true"),
-        "transcribeEnabled": True if transcribe_enabled is None else bool(transcribe_enabled),
-        "captureModes": user_recording_config.get("capture_modes", os.getenv("CAPTURE_MODES", "audio").split(",")),
+        "recordingEnabled": user_recording_config.get("enabled", True), # Default to True for batch transcription
+        "transcribeEnabled": False, # Disable real-time transcription
+        "captureModes": user_recording_config.get("capture_modes", ["audio"]),
         "recordingUploadUrl": f"http://bot-manager:8080/internal/recordings/upload"
     }
     if recording_enabled is not None:

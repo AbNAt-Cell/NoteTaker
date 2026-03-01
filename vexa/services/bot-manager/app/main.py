@@ -1710,6 +1710,7 @@ async def internal_upload_recording(
     sample_rate: Optional[int] = Form(default=None),
     is_final: bool = Form(default=True),
     db: AsyncSession = Depends(get_db),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     """
     Internal endpoint called by bots to upload finalized recordings.
@@ -1857,6 +1858,16 @@ async def internal_upload_recording(
         await db.commit()
         if is_final:
             asyncio.create_task(send_event_webhook(user_id, "recording.completed", {"recording": recording_payload}))
+            
+            # TRIGGER BATCH TRANSCRIPTION
+            background_tasks.add_task(
+                _process_deepgram_batch_transcription,
+                user_id,
+                meeting.id,
+                storage_path,
+                duration_seconds or 0.0
+            )
+
         return {
             "recording_id": recording_payload["id"],
             "media_file_id": media_file_id,
@@ -1905,6 +1916,16 @@ async def internal_upload_recording(
             "media_format": media_format,
         }
     }))
+
+    # TRIGGER BATCH TRANSCRIPTION
+    if is_final:
+        background_tasks.add_task(
+            _process_deepgram_batch_transcription,
+            user_id,
+            recording.meeting_id,
+            storage_path,
+            duration_seconds or 0.0
+        )
 
     return {
         "recording_id": recording.id,
