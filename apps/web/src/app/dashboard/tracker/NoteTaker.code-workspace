@@ -1,7 +1,19 @@
 {
+<<<<<<< HEAD
     "folders": [
         {
             "path": "../../../../../../../../.gemini/antigravity/scratch/amebo"
         }
     ]
+=======
+	"folders": [
+		{
+			"path": "../../../../../.."
+		},
+		{
+			"path": "../../../../../../../../vexa"
+		}
+	],
+	"settings": {}
+>>>>>>> e0ac2fcefaa9ea847b301e90548d7e3aaf7969c6
 }

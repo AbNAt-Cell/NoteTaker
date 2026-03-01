@@ -1,0 +1,6 @@
+﻿Ôû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+- Experiments (use with caution):
+  ┬À serverActions
+
+  Creating an optimized production build ...

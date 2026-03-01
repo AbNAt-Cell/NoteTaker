@@ -39,6 +39,7 @@ const features = [
 
 export default function LandingPage() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -74,7 +75,37 @@ export default function LandingPage() {
               Get Started Free
             </Link>
           </div>
+
+          <button
+            className={styles.hamburger}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={`${styles.bar} ${isMenuOpen ? styles.barOpen1 : ''}`} />
+            <span className={`${styles.bar} ${isMenuOpen ? styles.barOpen2 : ''}`} />
+            <span className={`${styles.bar} ${isMenuOpen ? styles.barOpen3 : ''}`} />
+          </button>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        {isMenuOpen && (
+          <div className={styles.mobileMenu}>
+            <Link
+              href="/login"
+              className={styles.mobileLink}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/register"
+              className={styles.mobileLinkAccent}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Get Started Free
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -164,7 +195,7 @@ export default function LandingPage() {
           <div className={styles.limitsImageWrapper}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/amebo-second-brain.png"
+              src="/amebo-second-brain.webp"
               alt="Amebo Digital Second Brain"
               className={styles.limitsImage}
             />

@@ -1,0 +1,51 @@
+﻿src/app/(dashboard)/meetings/[id]/page.tsx(28,73): error TS2307: Cannot find module '@/components/recording/audio-player' or its corresponding type declarations.
+src/app/(dashboard)/meetings/[id]/page.tsx(38,56): error TS2307: Cannot find module '@/components/meetings/bot-status-indicator' or its corresponding type declarations.
+src/app/(dashboard)/meetings/[id]/page.tsx(39,29): error TS2307: Cannot find module '@/components/ai' or its corresponding type declarations.
+src/app/(dashboard)/meetings/[id]/page.tsx(41,36): error TS2307: Cannot find module '@/hooks/use-live-transcripts' or its corresponding type declarations.
+src/app/(dashboard)/meetings/[id]/page.tsx(42,52): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/app/(dashboard)/meetings/[id]/page.tsx(43,45): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/app/(dashboard)/meetings/[id]/page.tsx(44,31): error TS2307: Cannot find module '@/components/meetings/status-history' or its corresponding type declarations.
+src/app/(dashboard)/meetings/[id]/page.tsx(48,32): error TS2307: Cannot find module '@/components/language-picker' or its corresponding type declarations.
+src/app/(dashboard)/meetings/[id]/page.tsx(77,32): error TS2307: Cannot find module '@/components/decisions/decisions-panel' or its corresponding type declarations.
+src/app/(dashboard)/meetings/[id]/page.tsx(152,106): error TS7006: Parameter 'mf' implicitly has an 'any' type.
+src/app/(dashboard)/meetings/[id]/page.tsx(156,53): error TS7006: Parameter 'mf' implicitly has an 'any' type.
+src/components/bot-status-indicator.tsx(10,46): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/bot-status-indicator.tsx(11,26): error TS2307: Cannot find module '@/components/docs/docs-link' or its corresponding type declarations.
+src/components/chat-panel.tsx(7,44): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/join/join-form.tsx(12,34): error TS2307: Cannot find module '@/hooks/use-runtime-config' or its corresponding type declarations.
+src/components/join/join-form.tsx(13,49): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/join/join-form.tsx(14,33): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/join/join-form.tsx(15,32): error TS2307: Cannot find module '@/components/language-picker' or its corresponding type declarations.
+src/components/join/join-form.tsx(17,26): error TS2307: Cannot find module '@/components/docs/docs-link' or its corresponding type declarations.
+src/components/join/join-modal.tsx(21,34): error TS2307: Cannot find module '@/hooks/use-runtime-config' or its corresponding type declarations.
+src/components/join/join-modal.tsx(22,49): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/join/join-modal.tsx(23,32): error TS2307: Cannot find module '@/components/language-picker' or its corresponding type declarations.
+src/components/join/join-modal.tsx(26,26): error TS2307: Cannot find module '@/components/docs/docs-link' or its corresponding type declarations.
+src/components/join/live-session.tsx(11,34): error TS2307: Cannot find module '@/hooks/use-vexa-websocket' or its corresponding type declarations.
+src/components/join/live-session.tsx(14,31): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/join/live-session.tsx(15,73): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/join/live-session.tsx(17,26): error TS2307: Cannot find module '@/components/docs/docs-link' or its corresponding type declarations.
+src/components/join/live-session.tsx(37,15): error TS7006: Parameter 'err' implicitly has an 'any' type.
+src/components/meetings/meeting-card.tsx(13,30): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/meetings/meeting-card.tsx(14,35): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/meetings/meeting-card.tsx(107,16): error TS7006: Parameter 'word' implicitly has an 'any' type.
+src/components/meetings/meeting-list.tsx(8,30): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/status-history.tsx(8,54): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/status-history.tsx(9,26): error TS2307: Cannot find module '@/components/docs/docs-link' or its corresponding type declarations.
+src/components/transcript/transcript-segment.tsx(6,79): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/transcript/transcript-viewer.tsx(11,29): error TS2307: Cannot find module '@/components/ai' or its corresponding type declarations.
+src/components/transcript/transcript-viewer.tsx(22,87): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/transcript/transcript-viewer.tsx(23,33): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/components/ui/logo.tsx(3,26): error TS2307: Cannot find module 'next-themes' or its corresponding type declarations.
+src/components/ui/sonner.tsx(10,26): error TS2307: Cannot find module 'next-themes' or its corresponding type declarations.
+src/lib/admin-api.ts(7,8): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/lib/api.ts(8,8): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/lib/email.ts(1,24): error TS2307: Cannot find module 'nodemailer' or its corresponding type declarations.
+src/lib/export.ts(1,49): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/lib/transcript-dedup.ts(1,40): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/lib/zoom-oauth-client.ts(1,39): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/stores/admin-store.ts(9,8): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/stores/admin-store.ts(139,18): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/stores/auth-store.ts(3,31): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/stores/live-store.ts(2,74): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.
+src/stores/meetings-store.ts(2,102): error TS2307: Cannot find module '@/types/vexa' or its corresponding type declarations.

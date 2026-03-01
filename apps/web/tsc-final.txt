@@ -1,0 +1,9 @@
+﻿src/app/(dashboard)/meetings/[id]/page.tsx(38,56): error TS2307: Cannot find module '@/components/meetings/bot-status-indicator' or its corresponding type declarations.
+src/app/(dashboard)/meetings/[id]/page.tsx(44,31): error TS2307: Cannot find module '@/components/meetings/status-history' or its corresponding type declarations.
+src/app/(dashboard)/meetings/[id]/page.tsx(48,32): error TS2307: Cannot find module '@/components/language-picker' or its corresponding type declarations.
+src/components/ai/ai-chat-panel.tsx(4,25): error TS2307: Cannot find module '@ai-sdk/react' or its corresponding type declarations.
+src/components/ai/ai-chat-panel.tsx(5,38): error TS2307: Cannot find module 'ai' or its corresponding type declarations.
+src/components/ai/ai-chat-panel.tsx(7,23): error TS2307: Cannot find module 'remark-gfm' or its corresponding type declarations.
+src/components/ai/ai-chat-panel.tsx(340,32): error TS7006: Parameter 'message' implicitly has an 'any' type.
+src/components/join/join-form.tsx(15,32): error TS2307: Cannot find module '@/components/language-picker' or its corresponding type declarations.
+src/components/join/join-modal.tsx(23,32): error TS2307: Cannot find module '@/components/language-picker' or its corresponding type declarations.
