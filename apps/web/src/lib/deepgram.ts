@@ -1,12 +1,19 @@
 import { createClient } from "@deepgram/sdk";
 
-const deepgramApiKey = process.env.DEEPGRAM_API_KEY;
+let _deepgram: ReturnType<typeof createClient> | null = null;
 
-if (!deepgramApiKey) {
-    console.warn("DEEPGRAM_API_KEY is not set. Transcription will not work.");
+export function getDeepgram() {
+    if (_deepgram) return _deepgram;
+
+    const deepgramApiKey = process.env.DEEPGRAM_API_KEY;
+
+    if (!deepgramApiKey) {
+        throw new Error("DEEPGRAM_API_KEY is not set. Please add it to your environment variables.");
+    }
+
+    _deepgram = createClient(deepgramApiKey);
+    return _deepgram;
 }
-
-export const deepgram = createClient(deepgramApiKey || "");
 
 /**
  * Transcribes an audio file using Deepgram
@@ -15,6 +22,7 @@ export const deepgram = createClient(deepgramApiKey || "");
  */
 export async function transcribeAudio(audioSource: string | Buffer) {
     try {
+        const deepgram = getDeepgram();
         const options = {
             smart_format: true,
             model: "nova-2",
