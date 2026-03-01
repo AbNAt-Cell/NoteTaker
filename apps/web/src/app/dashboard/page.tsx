@@ -121,7 +121,7 @@ export default function DashboardPage() {
                             formData.append("title", data.title || "Dashboard Recording");
                             formData.append("duration_seconds", data.duration.toString());
 
-                            const res = await fetch("/api/vexa/recordings/upload", {
+                            const res = await fetch("/api/meetings/upload", {
                                 method: "POST",
                                 body: formData
                             });

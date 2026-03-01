@@ -4,7 +4,6 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
-import { JoinModal } from "@/components/join/join-modal";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/auth/auth-provider";
 
@@ -38,7 +37,6 @@ export function AppLayout({ children }: AppLayoutProps) {
             {children}
           </main>
         </div>
-        <JoinModal />
         <Toaster position="bottom-right" />
       </div>
     </AuthProvider>

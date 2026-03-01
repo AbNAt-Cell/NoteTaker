@@ -1,5 +1,3 @@
-import { VexaAPIError } from "@/lib/api";
-
 export interface UserFriendlyError {
   title: string;
   description: string;
@@ -27,24 +25,8 @@ export function getUserFriendlyError(error: Error): UserFriendlyError {
     };
   }
 
-  // Authentication errors
-  if (error instanceof VexaAPIError && error.status === 401) {
-    return {
-      title: "Authentication failed",
-      description: "Your session may have expired. Please log in again.",
-    };
-  }
-
-  // Forbidden
-  if (error instanceof VexaAPIError && error.status === 403) {
-    return {
-      title: "Access denied",
-      description: error.message || "You don't have permission to perform this action.",
-    };
-  }
-
   // Server errors
-  if (error instanceof VexaAPIError && error.status >= 500) {
+  if (message.includes("server error") || (error as any).status >= 500) {
     return {
       title: "Server error",
       description: "The server encountered an issue. Please try again later.",

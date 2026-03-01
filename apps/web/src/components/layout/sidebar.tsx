@@ -2,28 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { getDocsUrl } from "@/lib/docs/webapp-url";
 import {
   LayoutDashboard,
   Video,
-  Plus,
   Settings,
   X,
-  Users,
   Shield,
-  LogOut,
-  Lock,
-  Bot,
   Zap,
-  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useJoinModalStore } from "@/stores/join-modal-store";
-import { useAdminAuthStore } from "@/stores/admin-auth-store";
-import { AdminAuthModal } from "@/components/admin/admin-auth-modal";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -37,41 +27,12 @@ const navigation = [
 ];
 
 const adminNavigation = [
-  { name: "Users", href: "/dashboard/admin/users", icon: Users },
-  { name: "Bots", href: "/dashboard/admin/bots", icon: Bot },
+  { name: "Admin Overview", href: "/dashboard/admin", icon: Shield },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const openJoinModal = useJoinModalStore((state) => state.openModal);
-  const { isAdminAuthenticated, logout: adminLogout } = useAdminAuthStore();
-  const [showAdminAuthModal, setShowAdminAuthModal] = useState(false);
-
-  const handleJoinClick = () => {
-    openJoinModal();
-    onClose?.();
-  };
-
-  const handleAdminClick = (href: string) => {
-    if (isAdminAuthenticated) {
-      router.push(href);
-      onClose?.();
-    } else {
-      setShowAdminAuthModal(true);
-    }
-  };
-
-  const handleAdminAuthSuccess = () => {
-    // Redirect to admin after successful auth
-    router.push("/admin/users");
-    onClose?.();
-  };
-
-  const handleAdminLogout = () => {
-    adminLogout();
-  };
 
   return (
     <>
@@ -130,69 +91,36 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   </Link>
                 );
               })}
-              {/* Join Meeting button */}
-              <button
-                onClick={handleJoinClick}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              >
-                <Plus className="h-5 w-5" />
-                Join Meeting
-              </button>
 
               {/* Admin Section */}
               <div className="mt-6 pt-4 border-t">
-                <div className="flex items-center justify-between px-3 mb-2">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Admin
-                    </span>
-                  </div>
-                  {isAdminAuthenticated && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={handleAdminLogout}
-                      title="Logout from admin"
-                    >
-                      <LogOut className="h-3 w-3 text-muted-foreground" />
-                    </Button>
-                  )}
+                <div className="flex items-center gap-2 px-3 mb-2">
+                  <Shield className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Admin
+                  </span>
                 </div>
 
-                {isAdminAuthenticated ? (
-                  // Show admin navigation when authenticated
-                  adminNavigation.map((item) => {
-                    const isActive = pathname.startsWith(item.href);
+                {adminNavigation.map((item) => {
+                  const isActive = pathname.startsWith(item.href);
 
-                    return (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        onClick={onClose}
-                        className={cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                          isActive
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                        )}
-                      >
-                        <item.icon className="h-5 w-5" />
-                        {item.name}
-                      </Link>
-                    );
-                  })
-                ) : (
-                  // Show login prompt when not authenticated
-                  <button
-                    onClick={() => setShowAdminAuthModal(true)}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <Lock className="h-5 w-5" />
-                    <span>Unlock Admin</span>
-                  </button>
-                )}
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={onClose}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      )}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      {item.name}
+                    </Link>
+                  );
+                })}
               </div>
             </nav>
           </ScrollArea>
@@ -207,13 +135,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
         </div>
       </aside>
-
-      {/* Admin Auth Modal */}
-      <AdminAuthModal
-        open={showAdminAuthModal}
-        onOpenChange={setShowAdminAuthModal}
-        onSuccess={handleAdminAuthSuccess}
-      />
     </>
   );
 }

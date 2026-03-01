@@ -28,7 +28,7 @@ export async function GET() {
         const { result: keyResult, error: keyError } = await deepgram.manage.createProjectKey(
             projectId,
             {
-                comment: "Vexa Dashboard Temp Key",
+                comment: "NoteTaker Dashboard Temp Key",
                 scopes: ["usage:write"],
                 time_to_live_in_seconds: 7200, // 2 hours is plenty for a meeting
             }
