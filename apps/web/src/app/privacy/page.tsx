@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 export const metadata = {
-    title: 'Privacy Policy - Amebo',
-    description: 'Privacy Policy and data handling practices for Amebo AI.',
+    title: 'Privacy Policy - NoteTaker',
+    description: 'Privacy Policy and data handling practices for NoteTaker AI.',
 };
 
 export default function PrivacyPolicy() {
@@ -20,8 +20,8 @@ export default function PrivacyPolicy() {
             <section style={{ marginBottom: '32px' }}>
                 <h2 style={{ fontSize: '1.5rem', marginBottom: '16px', color: '#fff' }}>1. Introduction</h2>
                 <p style={{ marginBottom: '16px' }}>
-                    Welcome to Amebo ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy.
-                    This Privacy Policy explains how we collect, use, and share your information when you use our AI meeting intelligence services at ameboai.com (the "Service").
+                    Welcome to NoteTaker ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy.
+                    This Privacy Policy explains how we collect, use, and share your information when you use our AI meeting intelligence services at NoteTakerai.com (the "Service").
                 </p>
             </section>
 
@@ -49,7 +49,7 @@ export default function PrivacyPolicy() {
             <section style={{ marginBottom: '32px' }}>
                 <h2 style={{ fontSize: '1.5rem', marginBottom: '16px', color: '#fff' }}>4. Data Processing and AI</h2>
                 <p style={{ marginBottom: '16px' }}>
-                    Amebo utilizes advanced AI models (such as OpenAI) to process meeting audio and transcripts. Your meeting data is processed securely and is <strong>not</strong> used by Amebo or our third-party AI providers to train public AI models. Data is encrypted in transit and at rest.
+                    NoteTaker utilizes advanced AI models (such as OpenAI) to process meeting audio and transcripts. Your meeting data is processed securely and is <strong>not</strong> used by NoteTaker or our third-party AI providers to train public AI models. Data is encrypted in transit and at rest.
                 </p>
             </section>
 
@@ -70,9 +70,10 @@ export default function PrivacyPolicy() {
             <section>
                 <h2 style={{ fontSize: '1.5rem', marginBottom: '16px', color: '#fff' }}>7. Contact Us</h2>
                 <p>
-                    If you have questions or comments about this notice, you may email us at support@ameboai.com.
+                    If you have questions or comments about this notice, you may email us at support@NoteTakerai.com.
                 </p>
             </section>
         </div>
     );
 }
+

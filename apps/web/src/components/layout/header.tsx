@@ -61,7 +61,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-semibold group">
           <Logo size="md" showText={false} className="group-hover:scale-105 transition-transform" />
-          <span className="hidden sm:inline-block">Amebo Dashboard</span>
+          <span className="hidden sm:inline-block">NoteTaker Dashboard</span>
         </Link>
 
         {/* Spacer */}

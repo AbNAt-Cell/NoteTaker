@@ -11,7 +11,7 @@ interface MicDetectorProps {
 /**
  * MicDetector — Passively monitors mic activity.
  * When audio above threshold is detected, shows a floating widget
- * prompting the user to start recording with Amebo.
+ * prompting the user to start recording with NoteTaker.
  */
 export default function MicDetector({ onStartRecording, isRecording }: MicDetectorProps) {
     const [micActive, setMicActive] = useState(false);
@@ -164,7 +164,7 @@ export default function MicDetector({ onStartRecording, isRecording }: MicDetect
                 {/* Text */}
                 <div className={styles.textContent}>
                     <p className={styles.title}>🎙️ Mic activity detected</p>
-                    <p className={styles.subtitle}>It looks like you&apos;re in a meeting. Want Amebo to capture it?</p>
+                    <p className={styles.subtitle}>It looks like you&apos;re in a meeting. Want NoteTaker to capture it?</p>
                 </div>
 
                 {/* Actions */}
@@ -181,3 +181,4 @@ export default function MicDetector({ onStartRecording, isRecording }: MicDetect
         </div>
     );
 }
+

@@ -8,7 +8,7 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: 'Amebo — AI-Powered Meeting Intelligence',
+  title: 'NoteTaker — AI-Powered Meeting Intelligence',
   description: 'Capture meetings, generate transcripts, and extract insights automatically. Your AI meeting assistant.',
   icons: {
     icon: '/logo.svg',

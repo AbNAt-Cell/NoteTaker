@@ -1,5 +1,5 @@
 /* ============================================================
-   Amebo — Dashboard Styles (Meeting-Focused)
+   NoteTaker — Dashboard Styles (Meeting-Focused)
    ============================================================ */
 
 .dashboard {
@@ -71,7 +71,7 @@
     flex-shrink: 0;
 }
 
-/* Start Amebo button */
+/* Start NoteTaker button */
 .startBtn {
     display: flex;
     align-items: center;

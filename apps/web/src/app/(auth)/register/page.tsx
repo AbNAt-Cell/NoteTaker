@@ -48,8 +48,8 @@ export default function RegisterPage() {
         <div className={styles.authPage}>
             <div className={styles.authCard}>
                 <div className={styles.authLogo}>
-                    <img src="/logo.svg" alt="Amebo Logo" width={32} height={32} />
-                    <span className={styles.logoGradient}>Amebo</span>
+                    <img src="/logo.svg" alt="NoteTaker Logo" width={32} height={32} />
+                    <span className={styles.logoGradient}>NoteTaker</span>
                 </div>
                 <h1 className={styles.authTitle}>Create your account</h1>
                 <p className={styles.authSubtitle}>Start capturing smarter meetings today</p>
@@ -141,3 +141,4 @@ export default function RegisterPage() {
         </div>
     );
 }
+

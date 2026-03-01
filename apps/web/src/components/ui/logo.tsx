@@ -31,7 +31,7 @@ export function Logo({ className, size = "md", showText = false }: LogoProps) {
     setMounted(true);
   }, []);
 
-  // Use the Amebo logo regardless of theme
+  // Use the NoteTaker logo regardless of theme
   const logoSrc = "/logo.svg";
 
   if (!mounted) {
@@ -40,7 +40,7 @@ export function Logo({ className, size = "md", showText = false }: LogoProps) {
       <div className={cn("flex items-center gap-2", className)}>
         <div className={cn(sizeClasses[size], "bg-muted rounded-lg animate-pulse")} />
         {showText && (
-          <span className={cn("font-semibold", textSizeClasses[size])}>Amebo</span>
+          <span className={cn("font-semibold", textSizeClasses[size])}>NoteTaker</span>
         )}
       </div>
     );
@@ -50,14 +50,14 @@ export function Logo({ className, size = "md", showText = false }: LogoProps) {
     <div className={cn("flex items-center gap-2", className)}>
       <Image
         src={logoSrc}
-        alt="Amebo Logo"
+        alt="NoteTaker Logo"
         width={size === "sm" ? 24 : size === "md" ? 32 : 48}
         height={size === "sm" ? 24 : size === "md" ? 32 : 48}
         className={cn(sizeClasses[size], "object-contain")}
         priority
       />
       {showText && (
-        <span className={cn("font-semibold", textSizeClasses[size])}>Amebo</span>
+        <span className={cn("font-semibold", textSizeClasses[size])}>NoteTaker</span>
       )}
     </div>
   );

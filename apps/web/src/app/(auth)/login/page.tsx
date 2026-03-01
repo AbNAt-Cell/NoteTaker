@@ -44,8 +44,8 @@ export default function LoginPage() {
         <div className={styles.authPage}>
             <div className={styles.authCard}>
                 <div className={styles.authLogo}>
-                    <img src="/logo.svg" alt="Amebo Logo" width={32} height={32} />
-                    <span className={styles.logoGradient}>Amebo</span>
+                    <img src="/logo.svg" alt="NoteTaker Logo" width={32} height={32} />
+                    <span className={styles.logoGradient}>NoteTaker</span>
                 </div>
                 <h1 className={styles.authTitle}>Welcome back</h1>
                 <p className={styles.authSubtitle}>Sign in to your account to continue</p>
@@ -118,3 +118,4 @@ export default function LoginPage() {
         </div>
     );
 }
+

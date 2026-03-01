@@ -78,7 +78,7 @@ export function getDefaultBotName(): string {
     return cachedConfig.defaultBotName;
   }
   // Fallback to default
-  return "Amebo";
+  return "NoteTaker";
 }
 
 /**
@@ -94,3 +94,4 @@ export async function prefetchConfig(): Promise<RuntimeConfig> {
   cachedConfig = await configPromise;
   return cachedConfig;
 }
+

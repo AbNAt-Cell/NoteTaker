@@ -206,7 +206,7 @@ export default function RecordingWidget({
                     </select>
 
                     <button className={styles.startBtn} onClick={startRecording}>
-                        <img src="/logo.svg" alt="Amebo Logo" width={16} height={16} /> Start Amebo
+                        <img src="/logo.svg" alt="NoteTaker Logo" width={16} height={16} /> Start NoteTaker
                     </button>
 
                     <label className={styles.dontShowLabel}>
@@ -253,7 +253,7 @@ export default function RecordingWidget({
                         <strong>Short meeting</strong>
                         <button className={styles.warningClose} onClick={cancelStop}>✕</button>
                     </div>
-                    <p>Amebo works best with meetings of over 5 minutes. Continue?</p>
+                    <p>NoteTaker works best with meetings of over 5 minutes. Continue?</p>
                     <label className={styles.dontShowLabel}>
                         <input type="checkbox" />
                         Don&apos;t show this message again
@@ -275,3 +275,4 @@ export default function RecordingWidget({
         </div>
     );
 }
+

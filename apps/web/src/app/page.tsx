@@ -64,8 +64,8 @@ export default function LandingPage() {
       <nav className={styles.nav}>
         <div className={styles.navInner}>
           <Link href="/" className={styles.logo}>
-            <img src="/logo.svg" alt="Amebo Logo" width={32} height={32} className={styles.logoIcon} />
-            <span className={styles.logoText} style={{ color: 'white' }}>Amebo</span>
+            <img src="/logo.svg" alt="NoteTaker Logo" width={32} height={32} className={styles.logoIcon} />
+            <span className={styles.logoText} style={{ color: 'white' }}>NoteTaker</span>
           </Link>
           <div className={styles.navLinks}>
             <Link href="/login" className="btn-secondary" style={{ padding: '10px 22px' }}>
@@ -118,14 +118,14 @@ export default function LandingPage() {
           <h1 className={styles.heroTitle}>
             Note-taking at the
             <br />
-            <span className="gradient-text">speed of thought with</span> Amebo.
+            <span className="gradient-text">speed of thought with</span> NoteTaker.
           </h1>
           <p className={styles.heroSubtitle}>
             Your second brain, powered by advanced AI. Auto-summarize meetings, organize thoughts semantically, and never lose a great idea again.
           </p>
           <div className={styles.heroCta}>
             <Link href="/register" className="btn-primary" style={{ padding: '16px 36px', fontSize: '1.05rem' }}>
-              Start Using Amebo →
+              Start Using NoteTaker →
             </Link>
             <Link href="#features" className="btn-secondary" style={{ padding: '16px 36px', fontSize: '1.05rem' }}>
               See Features
@@ -158,7 +158,7 @@ export default function LandingPage() {
             <span className="gradient-text"> capture brilliance</span>
           </h2>
           <p className={styles.sectionSubtitle}>
-            From quick meetings to full transcripts, Amebo handles it all.
+            From quick meetings to full transcripts, NoteTaker handles it all.
           </p>
         </div>
         <div className={styles.featureGrid}>
@@ -183,10 +183,10 @@ export default function LandingPage() {
             <h2 className={styles.limitsTitle}>
               Your memory<br />
               has limits.<br />
-              Amebo doesn&apos;t.
+              NoteTaker doesn&apos;t.
             </h2>
             <p className={styles.limitsBody}>
-              Don&apos;t let brilliant ideas die in an unorganized notepad. Amebo acts as your digital second brain, using advanced AI to semantically organize every meeting, brainstorm, and interview. If it was said, it&apos;s saved, and searchable.
+              Don&apos;t let brilliant ideas die in an unorganized notepad. NoteTaker acts as your digital second brain, using advanced AI to semantically organize every meeting, brainstorm, and interview. If it was said, it&apos;s saved, and searchable.
             </p>
             <Link href="/register" className={styles.limitsCta}>
               Get started for free
@@ -195,8 +195,8 @@ export default function LandingPage() {
           <div className={styles.limitsImageWrapper}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/amebo-second-brain.webp"
-              alt="Amebo Digital Second Brain"
+              src="/NoteTaker-second-brain.webp"
+              alt="NoteTaker Digital Second Brain"
               className={styles.limitsImage}
             />
           </div>
@@ -210,7 +210,7 @@ export default function LandingPage() {
             Ready to <span className="gradient-text">supercharge</span> your meetings?
           </h2>
           <p className={styles.ctaSubtitle}>
-            Join thousands of teams using Amebo to capture every meeting and idea.
+            Join thousands of teams using NoteTaker to capture every meeting and idea.
           </p>
           <Link href="/register" className="btn-primary" style={{ padding: '16px 40px', fontSize: '1.1rem' }}>
             Get Started — It&apos;s Free
@@ -222,16 +222,17 @@ export default function LandingPage() {
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
-            <img src="/logo.svg" alt="Amebo Logo" width={24} height={24} className={styles.logoIcon} />
-            <span>Amebo</span>
+            <img src="/logo.svg" alt="NoteTaker Logo" width={24} height={24} className={styles.logoIcon} />
+            <span>NoteTaker</span>
           </div>
           <div style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#888', marginTop: '16px' }}>
             <Link href="/privacy" style={{ textDecoration: 'none', color: 'inherit', transition: 'color 150ms' }} onMouseEnter={(e) => e.currentTarget.style.color = '#ccc'} onMouseLeave={(e) => e.currentTarget.style.color = '#888'}>Privacy Policy</Link>
             <Link href="/terms" style={{ textDecoration: 'none', color: 'inherit', transition: 'color 150ms' }} onMouseEnter={(e) => e.currentTarget.style.color = '#ccc'} onMouseLeave={(e) => e.currentTarget.style.color = '#888'}>Terms of Service</Link>
           </div>
-          <p className={styles.footerText}>© 2026 Amebo. Built for brilliant teams.</p>
+          <p className={styles.footerText}>© 2026 NoteTaker. Built for brilliant teams.</p>
         </div>
       </footer>
     </div>
   );
 }
+

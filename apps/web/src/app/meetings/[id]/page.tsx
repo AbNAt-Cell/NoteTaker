@@ -271,7 +271,7 @@ export default function MeetingPage({ params }: MeetingPageProps) {
                 </div>
 
                 <Link href="/dashboard" className={styles.startBtn}>
-                    <img src="/logo.svg" alt="Amebo Logo" width={16} height={16} /> Start Amebo
+                    <img src="/logo.svg" alt="NoteTaker Logo" width={16} height={16} /> Start NoteTaker
                 </Link>
 
                 <nav className={styles.sidebarNav}>
@@ -304,7 +304,7 @@ export default function MeetingPage({ params }: MeetingPageProps) {
                     {showPromo && (
                         <div className={styles.promoCard}>
                             <div className={styles.promoHeader}>
-                                <span>{calendarConnected ? '✅ Calendar Connected' : 'Unlock the power of Amebo'}</span>
+                                <span>{calendarConnected ? '✅ Calendar Connected' : 'Unlock the power of NoteTaker'}</span>
                                 <button className={styles.promoClose} onClick={() => setShowPromo(false)}>×</button>
                             </div>
                             {calendarConnected ? (

@@ -129,7 +129,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="border-t p-4 shrink-0 space-y-2">
             <div>
               <p className="text-xs text-muted-foreground text-center">
-                Amebo Dashboard
+                NoteTaker Dashboard
               </p>
             </div>
           </div>
