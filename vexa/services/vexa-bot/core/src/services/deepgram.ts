@@ -196,48 +196,62 @@ export class DeepgramService {
                 console.error(`[Deepgram] FAILED to push transcript to Redis:`, redisError);
                 log(`[Deepgram] Redis push failed: ${redisError.message}`);
             }
+        } catch (error: any) {
+            console.error(`[Deepgram] Unexpected error in pushToRedis:`, error);
         }
+    }
 
     // Ignored / No-Op methods needed for compatibility with old interface
     sendAudioChunkMetadata(chunkLen: number, sr: number): boolean { return true; }
-        sendSpeakerEvent(...args: any[]): boolean { return true; }
-        sendSessionControl(...args: any[]): boolean { return true; }
+    sendSpeakerEvent(...args: any[]): boolean { return true; }
+    sendSessionControl(...args: any[]): boolean { return true; }
 
-    async getNextCandidate(failedUrl: string | null): Promise < string | null > {
-            return 'api.deepgram.com';
+    async getNextCandidate(failedUrl: string | null): Promise<string | null> {
+        return 'api.deepgram.com';
+    }
+
+    isReady(): boolean { return true; }
+    getSessionUid(): string | null { return this.connection ? this.connection.sessionUid : null; }
+
+    async cleanup() {
+        if (this.connection) {
+            this.connection.client.close();
         }
-
-        isReady(): boolean {
-            return this.connection?.isServerReady || false;
-        }
-
-        getSessionUid(): string | null {
-            return this.connection?.sessionUid || null;
-        }
-
-    async cleanup(): Promise < void> {
-            if(this.connection?.client) {
-            this.connection.client.finish();
-            this.connection.client = null;
-        }
-        this.connection = null;
-
         if (this.redisClient && this.redisClient.isOpen) {
             await this.redisClient.quit();
-            this.redisClient = null;
         }
     }
+}
+return this.connection?.isServerReady || false;
+        }
 
-    async initializeWithStubbornReconnection(platform: string): Promise<string> {
-        const url = await this.initialize();
-        if (!url) throw new Error("Could not initialize DeepgramService");
-        return url;
+getSessionUid(): string | null {
+    return this.connection?.sessionUid || null;
+}
+
+    async cleanup(): Promise < void> {
+    if(this.connection?.client) {
+    this.connection.client.finish();
+    this.connection.client = null;
+}
+this.connection = null;
+
+if (this.redisClient && this.redisClient.isOpen) {
+    await this.redisClient.quit();
+    this.redisClient = null;
+}
     }
+
+    async initializeWithStubbornReconnection(platform: string): Promise < string > {
+    const url = await this.initialize();
+    if(!url) throw new Error("Could not initialize DeepgramService");
+    return url;
+}
 
     private generateUUID(): string {
-        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-            const r = (Math.random() * 16) | 0, v = c == "x" ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-        });
-    }
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+        const r = (Math.random() * 16) | 0, v = c == "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+    });
+}
 }
