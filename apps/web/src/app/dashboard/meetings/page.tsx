@@ -143,38 +143,34 @@ export default function MeetingsDashboardPage() {
                                 toast.error("Not logged in");
                                 return;
                             }
+                            if (!data.audioBlob) {
+                                toast.error("No audio recorded");
+                                return;
+                            }
 
-                            const meetingData = {
-                                user_id: user.id,
-                                title: data.title || "Dashboard Recording",
-                                bot_status: 'completed',
-                                transcript_status: 'completed',
-                                scheduled_at: new Date(Date.now() - data.duration * 1000).toISOString(),
-                                duration_minutes: Math.ceil(data.duration / 60) || 1,
-                                scratchpad_notes: data.notes
-                            };
+                            toast.loading("Uploading and transcribing recording...", { id: "upload-recording" });
 
-                            const { data: newMeeting, error: meetingError } = await supabase
-                                .from('meetings')
-                                .insert(meetingData)
-                                .select()
-                                .single();
+                            const formData = new FormData();
+                            formData.append("audio_file", data.audioBlob, "recording.webm");
+                            formData.append("title", data.title || "Dashboard Recording");
+                            formData.append("duration_seconds", data.duration.toString());
 
-                            if (meetingError) throw meetingError;
+                            const res = await fetch("/api/vexa/recordings/upload", {
+                                method: "POST",
+                                body: formData
+                            });
 
-                            const transcriptData = {
-                                meeting_id: newMeeting.id,
-                                user_id: user.id,
-                                transcript_data: { segments: data.transcript },
-                                status: 'completed'
-                            };
+                            if (!res.ok) {
+                                const errText = await res.text();
+                                throw new Error(errText || "Failed to upload recording");
+                            }
 
-                            await supabase.from('transcripts').insert(transcriptData);
+                            const result = await res.json();
 
-                            toast.success("Recording saved successfully");
+                            toast.success("Recording saved successfully! Transcription is processing.", { id: "upload-recording" });
                             setShowRecordingWidget(false);
 
-                            router.push(`/dashboard/meetings/${newMeeting.id}`);
+                            router.push(`/dashboard/meetings/${result.meeting_id}`);
                         } catch (error: any) {
                             console.error("Save recording error:", error);
                             toast.error(`Failed to save: ${error.message}`);

@@ -58,6 +58,8 @@ try:
 except ValueError:
     BOT_STOP_DELAY_SECONDS = 90
 
+from app.deepgram_worker import _process_deepgram_batch_transcription
+
 # --- Status Transition Helper ---
 
 async def update_meeting_status(
@@ -2264,6 +2266,102 @@ async def delete_recording(
     return {"status": "deleted", "recording_id": recording_id}
 
 
+@app.post("/recordings/upload", summary="Upload a web recording", tags=["Recordings"])
+async def upload_web_recording(
+    audio_file: UploadFile = File(..., description="The recorded audio Blob/File"),
+    title: str = Form(default="Web Recording"),
+    duration_seconds: float = Form(default=0.0),
+    auth: tuple = Depends(get_user_and_token),
+    db: AsyncSession = Depends(get_db),
+    background_tasks: BackgroundTasks = BackgroundTasks()
+):
+    """
+    Accepts a manual web-based audio recording, creates a Meeting and Recording record,
+    stores the media file, and kicks off batch Deepgram transcription.
+    """
+    token, user = auth
+    storage = get_storage_client()
+    
+    # Generate timestamp and paths
+    now = datetime.utcnow()
+    file_ext = "webm" if "webm" in audio_file.content_type else "wav"
+    storage_path = f"web_recordings/{user.id}/{now.year}/{now.month:02d}/{now.day:02d}/{uuid_lib.uuid4().hex}.{file_ext}"
+
+    # Read binary bytes
+    audio_bytes = await audio_file.read()
+    file_size = len(audio_bytes)
+
+    # 1. Create a placeholder Meeting for this web recording
+    meeting = Meeting(
+        user_id=user.id,
+        platform="web_recording",
+        platform_specific_id=f"web_{uuid_lib.uuid4().hex[:12]}",
+        status=MeetingStatus.PROCESSING.value, # It's processing transcription now
+        start_time=now,
+        # Default meeting attributes
+        data={
+            "title": title,
+            "duration_minutes": max(1, int(duration_seconds / 60))
+        }
+    )
+    db.add(meeting)
+    await db.flush() # Flush to get meeting.id
+
+    # 2. Upload file to MinIO
+    try:
+        storage.upload_file(audio_bytes, storage_path, content_type=audio_file.content_type)
+    except Exception as e:
+        logger.error(f"Failed to upload web recording to MinIO: {e}", exc_info=True)
+        # Rollback and throw
+        await db.rollback()
+        raise HTTPException(status_code=500, detail="Storage backend failure")
+
+    # 3. Create Recording record
+    recording = Recording(
+        meeting_id=meeting.id,
+        user_id=user.id,
+        source="upload",
+        status="completed", # Reached backend successfully
+        created_at=now,
+        completed_at=now,
+        session_uid=f"web_upload_{uuid_lib.uuid4().hex[:8]}"
+    )
+    db.add(recording)
+    await db.flush()
+
+    # 4. Attach MediaFile to recording
+    media_file = MediaFile(
+        recording_id=recording.id,
+        type="audio",
+        format=file_ext,
+        storage_path=storage_path,
+        storage_backend="minio" if hasattr(storage, 'client') else "local",
+        file_size_bytes=file_size,
+        duration_seconds=duration_seconds,
+        extra_metadata={"filename": audio_file.filename, "content_type": audio_file.content_type}
+    )
+    db.add(media_file)
+    
+    await db.commit()
+    await db.refresh(meeting)
+
+    # 5. Kickoff background task for Deepgram batch processing
+    background_tasks.add_task(
+        _process_deepgram_batch_transcription,
+        user.id,
+        meeting.id,
+        storage_path,
+        duration_seconds
+    )
+
+    return {
+        "status": "success",
+        "meeting_id": meeting.id,
+        "recording_id": recording.id,
+        "message": "Recording uploaded successfully. Transcription queued."
+    }
+
+
 # --- RECORDING CONFIG ENDPOINTS ---
 
 class RecordingConfigUpdate(BaseModel):
@@ -2817,6 +2915,85 @@ async def _find_active_meeting(
 
 
 # --- END Voice Agent Endpoints ---
+
+
+# --- Recording Upload Endpoint ---
+
+@app.post("/recordings/upload", summary="Upload a web recording", tags=["Recordings"])
+async def upload_web_recording(
+    audio_file: UploadFile = File(..., description="The recorded audio Blob/File"),
+    title: str = Form(default="Web Recording"),
+    duration_seconds: float = Form(default=0.0),
+    auth: tuple = Depends(get_user_and_token),
+    db: AsyncSession = Depends(get_db),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
+):
+    """Accept a multipart audio upload, store in MinIO, create DB records, queue Deepgram."""
+    user, token = auth
+
+    # 1. Read the uploaded audio bytes
+    audio_bytes = await audio_file.read()
+    if not audio_bytes:
+        raise HTTPException(status_code=400, detail="Empty audio file")
+
+    # 2. Create a Meeting record
+    meeting = Meeting(
+        user_id=user.id,
+        platform="web_recording",
+        status=MeetingStatus.ACTIVE.value,
+        start_time=datetime.utcnow(),
+        data={"title": title, "duration_seconds": duration_seconds},
+    )
+    db.add(meeting)
+    await db.flush()  # get meeting.id
+
+    # 3. Upload audio to MinIO
+    storage_path = f"web-recordings/{user.id}/{meeting.id}/recording.webm"
+    try:
+        storage_client = create_storage_client()
+        storage_client.upload_bytes(
+            data=audio_bytes,
+            path=storage_path,
+            content_type=audio_file.content_type or "audio/webm",
+        )
+    except Exception as e:
+        logger.error(f"MinIO upload failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Storage upload failed: {e}")
+
+    # 4. Create a Recording record
+    recording = Recording(
+        meeting_id=meeting.id,
+        storage_path=storage_path,
+        status=RecordingStatus.COMPLETED.value,
+        source=RecordingSource.LOCAL.value,
+        started_at=meeting.start_time,
+        completed_at=datetime.utcnow(),
+        file_size=len(audio_bytes),
+    )
+    db.add(recording)
+    await db.commit()
+    await db.refresh(meeting)
+    await db.refresh(recording)
+
+    # 5. Queue background Deepgram transcription
+    from app.deepgram_worker import _process_deepgram_batch_transcription
+
+    background_tasks.add_task(
+        _process_deepgram_batch_transcription,
+        user.id,
+        meeting.id,
+        storage_path,
+        duration_seconds,
+    )
+
+    return {
+        "status": "success",
+        "meeting_id": meeting.id,
+        "recording_id": recording.id,
+        "message": "Recording uploaded successfully. Transcription queued.",
+    }
+
+# --- END Recording Upload Endpoint ---
 
 
 if __name__ == "__main__":

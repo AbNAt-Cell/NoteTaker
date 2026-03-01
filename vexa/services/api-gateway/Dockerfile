@@ -6,14 +6,14 @@ WORKDIR /app
 
 # Install shared library first
 COPY ./libs/shared-models /app/libs/shared-models
-RUN pip install --no-cache-dir /app/libs/shared-models
+RUN --mount=type=cache,target=/root/.cache/pip pip install --default-timeout=45 --retries 50 /app/libs/shared-models
 
 # Copy application code and requirements
 COPY ./services/api-gateway/requirements.txt /app/
 COPY ./services/api-gateway/main.py /app/
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install --default-timeout=45 --retries 50 -r requirements.txt
 
 # Expose port (e.g., 8000 for the gateway)
 EXPOSE 8000

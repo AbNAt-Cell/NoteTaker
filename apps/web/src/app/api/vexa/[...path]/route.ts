@@ -6,7 +6,7 @@ async function proxyRequest(
   params: Promise<{ path: string[] }>,
   method: string
 ): Promise<NextResponse> {
-  const VEXA_API_URL = process.env.VEXA_API_URL || "http://localhost:18056";
+  const VEXA_API_URL = process.env.VEXA_API_URL || "http://localhost:8056";
 
   // Get user's token from HTTP-only cookie (set during login)
   const cookieStore = await cookies();
@@ -19,9 +19,7 @@ async function proxyRequest(
   const pathString = path.join("/");
   const url = `${VEXA_API_URL}/${pathString}`;
 
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-  };
+  const headers: Record<string, string> = {};
 
   if (VEXA_API_KEY) {
     headers["X-API-Key"] = VEXA_API_KEY;
@@ -44,9 +42,21 @@ async function proxyRequest(
     };
 
     if (method !== "GET" && method !== "HEAD") {
-      const body = await request.text();
-      if (body) {
-        fetchOptions.body = body;
+      // Check if this is a multipart/form-data request (e.g. file upload)
+      const contentType = request.headers.get("content-type") || "";
+      if (contentType.includes("multipart/form-data")) {
+        // Forward the raw body stream and original content-type for file uploads
+        headers["content-type"] = contentType;
+        fetchOptions.body = request.body;
+        // @ts-ignore – Next.js fetch supports ReadableStream bodies
+        fetchOptions.duplex = "half";
+      } else {
+        // For JSON requests, forward as text with application/json content-type
+        headers["Content-Type"] = "application/json";
+        const body = await request.text();
+        if (body) {
+          fetchOptions.body = body;
+        }
       }
     }
 
@@ -54,13 +64,13 @@ async function proxyRequest(
     clearTimeout(timeoutId);
 
     // Handle empty responses
-    const contentType = response.headers.get("content-type");
+    const resContentType = response.headers.get("content-type");
     if (response.status === 204) {
       return new NextResponse(null, { status: response.status });
     }
 
     // Stream binary responses (audio, video, octet-stream) directly
-    if (contentType && !contentType.includes("application/json")) {
+    if (resContentType && !resContentType.includes("application/json")) {
       const responseHeaders = new Headers();
       // Forward relevant headers for media streaming
       for (const key of ["content-type", "content-length", "content-disposition",
@@ -80,8 +90,10 @@ async function proxyRequest(
     const isTimeout = error instanceof DOMException && error.name === "AbortError";
     console.error(`Proxy ${isTimeout ? "timeout" : "error"} for ${method} ${url}:`, error);
     return NextResponse.json(
-      { error: isTimeout ? "Backend request timed out" : "Failed to connect to Vexa API",
-        details: (error as Error).message },
+      {
+        error: isTimeout ? "Backend request timed out" : "Failed to connect to Vexa API",
+        details: (error as Error).message
+      },
       { status: isTimeout ? 504 : 502 }
     );
   }

@@ -17,29 +17,21 @@ interface RecordingWidgetProps {
     onSave: (data: {
         audioBlob: Blob | null;
         title: string;
-        notes: string;
         duration: number;
-        transcript: TranscriptSegment[];
     }) => void;
-    whisperEndpoint?: string;
-    whisperApiKey?: string;
 }
 
 export default function RecordingWidget({
     onClose,
     onSave,
-    whisperEndpoint,
-    whisperApiKey,
 }: RecordingWidgetProps) {
     // ── State ──────────────────────────────────────────────
     const [phase, setPhase] = useState<RecordingPhase>('mic_select');
     const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
     const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
     const [title, setTitle] = useState('');
-    const [notes, setNotes] = useState('');
     const [elapsed, setElapsed] = useState(0);
     const [audioLevel, setAudioLevel] = useState(0);
-    const [transcript, setTranscript] = useState<TranscriptSegment[]>([]);
     const [shortMeetingWarning, setShortMeetingWarning] = useState(false);
 
     // ── Refs ───────────────────────────────────────────────
@@ -161,13 +153,11 @@ export default function RecordingWidget({
             const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
             onSave({
                 audioBlob: blob,
-                title: title || 'Untitled Meeting',
-                notes,
+                title: title || 'Dashboard Recording',
                 duration: elapsed,
-                transcript,
             });
         }, 200);
-    }, [title, notes, elapsed, transcript, onSave]);
+    }, [title, elapsed, onSave]);
 
     const forceStop = useCallback(() => {
         setShortMeetingWarning(false);
@@ -228,41 +218,31 @@ export default function RecordingWidget({
         );
     }
 
-    // ── Render: Scratchpad (Recording) ────────────────────
+    // ── Render: Simple Timer UI ────────────────────
     return (
-        <div className={styles.widget}>
-            {/* Title bar */}
-            <div className={styles.widgetHeader}>
-                <button className={styles.expandBtn} title="Expand">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="15 3 21 3 21 9" />
-                        <polyline points="9 21 3 21 3 15" />
-                        <line x1="21" y1="3" x2="14" y2="10" />
-                        <line x1="3" y1="21" x2="10" y2="14" />
-                    </svg>
-                </button>
-                <span className={styles.widgetTitle}>Scratchpad</span>
-                <div className={styles.widgetControls}>
-                    <button className={styles.winBtn} onClick={() => { }}>─</button>
-                    <button className={styles.winBtn} onClick={() => { }}>□</button>
-                    <button className={styles.winBtn} onClick={onClose}>✕</button>
-                </div>
+        <div className={styles.widget} style={{ width: '380px', minHeight: 'auto', borderRadius: '16px', overflow: 'hidden' }}>
+            <div className={styles.widgetHeader} style={{ justifyContent: 'center', backgroundColor: '#f8f9fa', padding: '16px' }}>
+                <span className={styles.widgetTitle} style={{ fontWeight: 600, color: '#333' }}>Recording Meeting</span>
             </div>
 
-            {/* Scratchpad body */}
-            <div className={styles.scratchpad}>
-                <input
-                    className={styles.meetingTitleInput}
-                    value={title}
-                    onChange={e => setTitle(e.target.value)}
-                    placeholder="Meeting title..."
-                />
-                <textarea
-                    className={styles.notesArea}
-                    value={notes}
-                    onChange={e => setNotes(e.target.value)}
-                    placeholder="Write private notes..."
-                />
+            <div className={styles.scratchpad} style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#fff' }}>
+                <div style={{ position: 'relative', width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: `radial-gradient(circle, rgba(239, 68, 68, ${0.1 + audioLevel * 0.4}) 0%, rgba(239, 68, 68, 0) 70%)` }}>
+                    <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px rgba(239, 68, 68, 0.2)' }}>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                            <line x1="12" y1="19" x2="12" y2="23" />
+                            <line x1="8" y1="23" x2="16" y2="23" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div style={{ fontSize: '32px', fontWeight: 'bold', fontFamily: 'monospace', color: '#111', marginTop: '16px' }}>
+                    {fmt(elapsed)}
+                </div>
+                <div style={{ fontSize: '14px', color: '#666', marginTop: '8px' }}>
+                    Speak clearly into the microphone
+                </div>
             </div>
 
             {/* Short meeting warning */}
@@ -286,26 +266,10 @@ export default function RecordingWidget({
             )}
 
             {/* Bottom bar */}
-            <div className={styles.bottomBar}>
-                <span className={styles.timer}>{fmt(elapsed)}</span>
-                <div className={styles.audioViz}>
-                    <div className={styles.vizBar} style={{ transform: `scaleY(${0.3 + audioLevel * 0.7})` }} />
-                    <div className={styles.vizBar} style={{ transform: `scaleY(${0.2 + audioLevel * 0.8})` }} />
-                    <div className={styles.vizBar} style={{ transform: `scaleY(${0.4 + audioLevel * 0.6})` }} />
-                    <div className={styles.vizBar} style={{ transform: `scaleY(${0.1 + audioLevel * 0.9})` }} />
-                    <div className={styles.vizBar} style={{ transform: `scaleY(${0.35 + audioLevel * 0.65})` }} />
-                </div>
-                <button className={styles.micToggle} title="Mute microphone">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                        <line x1="12" y1="19" x2="12" y2="23" />
-                        <line x1="8" y1="23" x2="16" y2="23" />
-                    </svg>
-                </button>
-                <button className={styles.stopBtn} onClick={stopRecording}>
-                    <span className={styles.stopIcon} />
-                    Stop
+            <div className={styles.bottomBar} style={{ justifyContent: 'center', backgroundColor: '#f8f9fa', padding: '16px' }}>
+                <button className={styles.stopBtn} onClick={stopRecording} style={{ width: '100%', padding: '12px 24px', fontSize: '16px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span className={styles.stopIcon} style={{ marginRight: '8px' }} />
+                    Stop Recording
                 </button>
             </div>
         </div>

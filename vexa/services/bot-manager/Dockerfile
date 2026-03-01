@@ -7,14 +7,17 @@ WORKDIR /app
 # --- Install Shared Library ---
 # Copy the shared library source code
 COPY ./libs/shared-models/ /app/libs/shared-models/
-# Install the shared library so it's available to the app
-RUN pip install --no-cache-dir /app/libs/shared-models/
+# Install the shared library
+# Use buildx cache mount to persist downloaded wheels across flaking network drops
+RUN --mount=type=cache,target=/root/.cache/pip pip install --default-timeout=45 --retries 50 /app/libs/shared-models/
 
 # --- Install App Dependencies ---
 # Copy the requirements file
 COPY ./services/bot-manager/requirements.txt .
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install biggest dependencies first to minimize timeout rollback impact
+RUN --mount=type=cache,target=/root/.cache/pip pip install --default-timeout=45 --retries 50 boto3 psycopg2-binary deepgram-sdk pydantic
+# Install remaining dependencies
+RUN --mount=type=cache,target=/root/.cache/pip pip install --default-timeout=45 --retries 50 -r requirements.txt
 
 # --- Copy App Source ---
 # Copy the entire application source code

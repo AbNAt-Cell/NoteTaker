@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: services/api-gateway/Dockerfile
+      network: host
     dns:
       - 8.8.8.8
       - 8.8.4.4
@@ -60,6 +61,7 @@ services:
     build:
       context: .
       dockerfile: services/bot-manager/Dockerfile
+      network: host
     dns:
       - 8.8.8.8
       - 8.8.4.4
@@ -203,6 +205,20 @@ services:
     command: [ "redis-server", "--appendonly", "yes", "--appendfsync", "everysec" ]
     volumes:
       - redis-data:/data
+    networks:
+      - vexa_default
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=${DB_NAME:-vexa}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
     networks:
       - vexa_default
     restart: unless-stopped

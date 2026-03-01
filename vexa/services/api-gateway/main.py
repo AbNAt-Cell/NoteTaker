@@ -411,6 +411,16 @@ async def avatar_reset_proxy(platform: Platform, native_meeting_id: str, request
 
 # --- Recording Routes (proxy to Bot Manager) ---
 
+@app.post("/recordings/upload",
+         tags=["Recordings"],
+         summary="Upload a new web recording file",
+         description="Accepts a multipart form data upload of a recorded meeting.",
+         dependencies=[Depends(api_key_scheme)])
+async def upload_recording_proxy(request: Request):
+    """Forward request to Bot Manager to upload a web recording."""
+    url = f"{BOT_MANAGER_URL}/recordings/upload"
+    return await forward_request(app.state.http_client, "POST", url, request)
+
 @app.get("/recordings",
          tags=["Recordings"],
          summary="List recordings for the authenticated user",
