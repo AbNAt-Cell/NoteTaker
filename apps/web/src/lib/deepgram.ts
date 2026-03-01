@@ -15,17 +15,15 @@ export const deepgram = createClient(deepgramApiKey || "");
  */
 export async function transcribeAudio(audioSource: string | Buffer) {
     try {
-        const source = typeof audioSource === "string" ? { url: audioSource } : audioSource;
+        const options = {
+            smart_format: true,
+            model: "nova-2",
+            language: "en",
+        };
 
-        // @ts-ignore - Deepgram SDK types can be picky with Buffer vs UrlSource
-        const { result, error } = await deepgram.listen.prerecorded.transcribeUrl(
-            source,
-            {
-                smart_format: true,
-                model: "nova-2",
-                language: "en",
-            }
-        );
+        const { result, error } = typeof audioSource === "string"
+            ? await deepgram.listen.prerecorded.transcribeUrl({ url: audioSource }, options)
+            : await deepgram.listen.prerecorded.transcribeFile(audioSource, { ...options, mimetype: "audio/webm" });
 
         if (error) throw error;
 
