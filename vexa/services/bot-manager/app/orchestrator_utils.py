@@ -259,6 +259,7 @@ async def start_bot_container(
     environment = [
         f"BOT_CONFIG={bot_config_json}",
         f"DEEPGRAM_API_KEY={deepgram_api_key}",
+        f"REDIS_URL={REDIS_URL}",
         f"LOG_LEVEL={os.getenv('LOG_LEVEL', 'INFO').upper()}",
     ]
 
