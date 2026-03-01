@@ -17,23 +17,20 @@ export default function MeetingsPage() {
 
     useEffect(() => {
         const fetchMeetings = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
-
-            const { data, error } = await supabase
-                .from("meetings")
-                .select("*")
-                .eq("user_id", user.id)
-                .order("created_at", { ascending: false });
-
-            if (!error && data) {
+            try {
+                const res = await fetch("/api/meetings");
+                if (!res.ok) throw new Error("Failed to fetch meetings");
+                const data = await res.json();
                 setMeetings(data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
 
         fetchMeetings();
-    }, [supabase]);
+    }, []);
 
     const filteredMeetings = meetings.filter(m =>
         m.title?.toLowerCase().includes(searchQuery.toLowerCase())
