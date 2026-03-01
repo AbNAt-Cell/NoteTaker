@@ -221,37 +221,11 @@ export class DeepgramService {
             await this.redisClient.quit();
         }
     }
-}
-return this.connection?.isServerReady || false;
-        }
-
-getSessionUid(): string | null {
-    return this.connection?.sessionUid || null;
-}
-
-    async cleanup(): Promise < void> {
-    if(this.connection?.client) {
-    this.connection.client.finish();
-    this.connection.client = null;
-}
-this.connection = null;
-
-if (this.redisClient && this.redisClient.isOpen) {
-    await this.redisClient.quit();
-    this.redisClient = null;
-}
-    }
-
-    async initializeWithStubbornReconnection(platform: string): Promise < string > {
-    const url = await this.initialize();
-    if(!url) throw new Error("Could not initialize DeepgramService");
-    return url;
-}
 
     private generateUUID(): string {
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-        const r = (Math.random() * 16) | 0, v = c == "x" ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-    });
-}
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+            const r = (Math.random() * 16) | 0, v = c == "x" ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        });
+    }
 }
