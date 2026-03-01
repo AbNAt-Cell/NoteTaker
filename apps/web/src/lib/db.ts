@@ -2,7 +2,7 @@ import { Pool } from 'pg';
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://abba:chickenrepublic@31.97.145.11:5432/amebodb',
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false
 });
 
 export const query = (text: string, params?: any[]) => pool.query(text, params);

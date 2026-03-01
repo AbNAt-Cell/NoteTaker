@@ -11,14 +11,21 @@ export async function GET() {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const res = await query(
-            'SELECT * FROM meetings WHERE user_id = $1 ORDER BY created_at DESC',
-            [user.id]
-        );
+        console.log("Fetching meetings from Postgres for user:", user.id);
+        let res;
+        try {
+            res = await query(
+                'SELECT * FROM meetings WHERE user_id = $1 ORDER BY created_at DESC',
+                [user.id]
+            );
+        } catch (dbErr: any) {
+            console.error("Database error during meetings fetch:", dbErr);
+            return NextResponse.json({ error: "Database connection timeout or failure" }, { status: 503 });
+        }
 
         return NextResponse.json(res.rows);
     } catch (error: any) {
-        console.error("Fetch meetings error:", error);
+        console.error("Global fetch meetings error:", error);
         return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
     }
 }

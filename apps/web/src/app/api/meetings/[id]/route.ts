@@ -16,10 +16,17 @@ export async function GET(
         }
 
         // Fetch meeting
-        const meetingRes = await query(
-            'SELECT * FROM meetings WHERE id = $1 AND user_id = $2',
-            [id, user.id]
-        );
+        console.log("Fetching meeting from Postgres:", id);
+        let meetingRes;
+        try {
+            meetingRes = await query(
+                'SELECT * FROM meetings WHERE id = $1 AND user_id = $2',
+                [id, user.id]
+            );
+        } catch (dbErr: any) {
+            console.error("Database error during meeting fetch:", dbErr);
+            return NextResponse.json({ error: "Database connection timeout or failure" }, { status: 503 });
+        }
 
         if (meetingRes.rowCount === 0) {
             return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
@@ -28,10 +35,18 @@ export async function GET(
         const meeting = meetingRes.rows[0];
 
         // Fetch transcript
-        const transcriptRes = await query(
-            'SELECT * FROM transcripts WHERE meeting_id = $1',
-            [id]
-        );
+        console.log("Fetching transcript for meeting:", id);
+        let transcriptRes;
+        try {
+            transcriptRes = await query(
+                'SELECT * FROM transcripts WHERE meeting_id = $1',
+                [id]
+            );
+        } catch (dbErr: any) {
+            console.error("Database error during transcript fetch:", dbErr);
+            // We can still return the meeting without the transcript
+            transcriptRes = { rows: [], rowCount: 0 };
+        }
 
         const transcript = transcriptRes.rows[0] || null;
 
