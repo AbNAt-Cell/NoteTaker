@@ -185,33 +185,38 @@ export class DeepgramService {
             };
 
             const streamKey = process.env.REDIS_STREAM_KEY || 'transcription_segments';
-            await this.redisClient.xAdd(streamKey, '*', {
-                payload: JSON.stringify(payload)
-            });
-        } catch (err: any) {
-            log(`[Deepgram] Redis push failed: ${err.message}`);
+            console.log(`[Deepgram] Pushing transcript segment to Redis stream "${streamKey}". Text: "${segment.text}"`);
+
+            try {
+                const messageId = await this.redisClient.xAdd(streamKey, '*', {
+                    payload: JSON.stringify(payload)
+                });
+                console.log(`[Deepgram] Successfully pushed transcript to Redis. Message ID: ${messageId}`);
+            } catch (redisError: any) {
+                console.error(`[Deepgram] FAILED to push transcript to Redis:`, redisError);
+                log(`[Deepgram] Redis push failed: ${redisError.message}`);
+            }
         }
-    }
 
     // Ignored / No-Op methods needed for compatibility with old interface
     sendAudioChunkMetadata(chunkLen: number, sr: number): boolean { return true; }
-    sendSpeakerEvent(...args: any[]): boolean { return true; }
-    sendSessionControl(...args: any[]): boolean { return true; }
+        sendSpeakerEvent(...args: any[]): boolean { return true; }
+        sendSessionControl(...args: any[]): boolean { return true; }
 
-    async getNextCandidate(failedUrl: string | null): Promise<string | null> {
-        return 'api.deepgram.com';
-    }
+    async getNextCandidate(failedUrl: string | null): Promise < string | null > {
+            return 'api.deepgram.com';
+        }
 
-    isReady(): boolean {
-        return this.connection?.isServerReady || false;
-    }
+        isReady(): boolean {
+            return this.connection?.isServerReady || false;
+        }
 
-    getSessionUid(): string | null {
-        return this.connection?.sessionUid || null;
-    }
+        getSessionUid(): string | null {
+            return this.connection?.sessionUid || null;
+        }
 
-    async cleanup(): Promise<void> {
-        if (this.connection?.client) {
+    async cleanup(): Promise < void> {
+            if(this.connection?.client) {
             this.connection.client.finish();
             this.connection.client = null;
         }
