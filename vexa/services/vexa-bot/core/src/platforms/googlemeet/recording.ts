@@ -722,13 +722,37 @@ export async function startGoogleRecording(page: Page, botConfig: BotConfig): Pr
 
               const extractParticipantsFromMain = (botName: string | undefined): string[] => {
                 const participants: string[] = [];
+                const ignoredTexts = new Set([
+                  'devices', 'visual_effects', 'backgrounds and effects', 'show in a tile', 'more_vert',
+                  'front_hand', 'raising your hand', 'you', 'pin yourself', 'unpin yourself',
+                  'presentation', 'present now', 'turn on microphone', 'turn off microphone', 'turn on camera',
+                  'turn off camera', 'leave call', 'chat with everyone', 'show everyone', 'meeting details',
+                  'activities', 'host controls', 'close', 'minimize', 'maximize', 'unpin', 'pin',
+                  'remove from meeting', 'add to meeting', 'mute', 'unmute', 'more options'
+                ]);
+
+                const isIgnored = (t: string) => {
+                  const lower = t.toLowerCase();
+                  if (ignoredTexts.has(lower)) return true;
+                  if (lower.includes('more options for')) return true;
+                  if (lower.includes('others might still see your full video')) return true;
+                  // Material icon ligatures are often snake_case
+                  if (/^[a-z]+_[a-z_]+$/.test(t)) return true;
+                  return false;
+                };
+
                 const mainElement = document.querySelector('main');
                 if (mainElement) {
                   const nameElements = mainElement.querySelectorAll('*');
                   nameElements.forEach((el: Element) => {
                     const element = el as HTMLElement;
+
+                    // Skip if inside a button or is an icon
+                    if (element.tagName === 'BUTTON' || element.closest('button')) return;
+                    if (typeof element.className === 'string' && element.className.toLowerCase().includes('icon')) return;
+
                     const text = (element.textContent || '').trim();
-                    if (text && element.children.length === 0) {
+                    if (text && element.children.length === 0 && !isIgnored(text)) {
                       // Basic length validation only (allow numbers, parentheses, etc.)
                       if ((text.length > 1 && text.length < 50) || (botName && text === botName)) {
                         participants.push(text);
@@ -740,7 +764,7 @@ export async function startGoogleRecording(page: Page, botConfig: BotConfig): Pr
                 tooltips.forEach((el: Element) => {
                   const text = (el.textContent || '').trim();
                   // Basic length validation only (allow numbers, parentheses, etc.)
-                  if (text && ((text.length > 1 && text.length < 50) || (botName && text === botName))) {
+                  if (text && !isIgnored(text) && ((text.length > 1 && text.length < 50) || (botName && text === botName))) {
                     participants.push(text);
                   }
                 });

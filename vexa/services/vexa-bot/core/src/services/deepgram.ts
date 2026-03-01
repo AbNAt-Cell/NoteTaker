@@ -177,7 +177,8 @@ export class DeepgramService {
             const payload = {
                 token: botConfig.token,
                 platform: botConfig.platform,
-                meeting_id: botConfig.nativeMeetingId,
+                meeting_id: botConfig.meeting_id,
+                native_meeting_id: botConfig.nativeMeetingId,
                 meeting_url: botConfig.meetingUrl,
                 segments: [segment], // Transcription Collector expects a list
                 session_uid: this.connection!.sessionUid
