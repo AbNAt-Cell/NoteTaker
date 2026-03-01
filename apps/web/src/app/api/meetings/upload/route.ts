@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { transcribeAudio } from "@/lib/deepgram";
 import { v4 as uuidv4 } from "uuid";
+import { query, ensureProfile } from "@/lib/db";
 
 export async function POST(req: Request) {
     try {
@@ -21,6 +22,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "No audio file provided" }, { status: 400 });
         }
 
+        // 0. Ensure Profile exists in external Postgres
+        await ensureProfile(user.id, user.email!, (user.user_metadata as any)?.full_name);
+
         // 1. Upload to Supabase Storage
         const fileExt = audioFile.name.split(".").pop();
         const fileName = `${uuidv4()}.${fileExt}`;
@@ -36,47 +40,35 @@ export async function POST(req: Request) {
             .from("meetings")
             .getPublicUrl(filePath);
 
-        // 2. Create Meeting Record
-        const { data: meeting, error: meetingError } = await supabase
-            .from("meetings")
-            .insert({
-                user_id: user.id,
-                title,
-                duration_minutes: Math.ceil(durationSeconds / 60),
-                audio_url: publicUrl,
-                transcript_status: "processing",
-            })
-            .select()
-            .single();
-
-        if (meetingError) throw meetingError;
+        // 2. Create Meeting Record in external Postgres
+        const meetingRes = await query(
+            'INSERT INTO meetings (user_id, title, duration_minutes, audio_url, transcript_status) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [user.id, title, Math.ceil(durationSeconds / 60), publicUrl, "processing"]
+        );
+        const meeting = meetingRes.rows[0];
 
         // 3. Trigger Transcription (Async-ish for now)
-        // In a real production app, this should be a background job (e.g. Inngest or Upstash)
-        // For now, we'll do it inline but handle the result
+        // In a real production app, this should be a background job
         try {
             const transcript = await transcribeAudio(publicUrl);
 
-            // 4. Save Transcript
-            await supabase
-                .from("transcripts")
-                .insert({
-                    meeting_id: meeting.id,
-                    raw_text: transcript,
-                    cleaned_text: transcript, // Placeholder
-                });
+            // 4. Save Transcript to external Postgres
+            await query(
+                'INSERT INTO transcripts (meeting_id, raw_text, cleaned_text) VALUES ($1, $2, $3)',
+                [meeting.id, transcript, transcript]
+            );
 
-            await supabase
-                .from("meetings")
-                .update({ transcript_status: "completed" })
-                .eq("id", meeting.id);
+            await query(
+                'UPDATE meetings SET transcript_status = $1 WHERE id = $2',
+                ["completed", meeting.id]
+            );
 
         } catch (transcribeErr) {
             console.error("Transcription failed:", transcribeErr);
-            await supabase
-                .from("meetings")
-                .update({ transcript_status: "failed" })
-                .eq("id", meeting.id);
+            await query(
+                'UPDATE meetings SET transcript_status = $1 WHERE id = $2',
+                ["failed", meeting.id]
+            );
         }
 
         return NextResponse.json({
