@@ -210,15 +210,24 @@ export class DeepgramService {
         return 'api.deepgram.com';
     }
 
-    isReady(): boolean { return true; }
-    getSessionUid(): string | null { return this.connection ? this.connection.sessionUid : null; }
+    isReady(): boolean {
+        return this.connection?.isServerReady || false;
+    }
+
+    getSessionUid(): string | null {
+        return this.connection?.sessionUid || null;
+    }
 
     async cleanup() {
-        if (this.connection) {
-            this.connection.client.close();
+        if (this.connection && this.connection.client) {
+            this.connection.client.finish();
+            this.connection.client = null;
         }
+        this.connection = null;
+
         if (this.redisClient && this.redisClient.isOpen) {
             await this.redisClient.quit();
+            this.redisClient = null;
         }
     }
 
